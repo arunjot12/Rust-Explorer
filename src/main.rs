@@ -2,6 +2,8 @@ use std::io::{self, Write};
 use jsonrpsee::ws_client::{WsClient, WsClientBuilder};
 use diesel::prelude::*;
 use dotenvy::dotenv;
+use models::NewBlockchain;
+use self::models::Blockchain;
 use std::env;
 
 mod blockchain_data;
@@ -38,6 +40,17 @@ fn get_websocket_endpoint() -> String {
     endpoint.trim().to_string()
 }
 
+// Store the name in the database
+fn store_blockchain(blockchain:&str){
+
+    let new_blockchain = NewBlockchain { blockchain_name:blockchain };
+
+    diesel::insert_into(schema::blockchain_info::table)
+    .values(&new_blockchain)
+    .get_result::<Blockchain>(&mut establish_connection())
+    .expect("Error saving new post");
+}
+
 /// Handle user input for the selected option
 fn get_selected_option() -> u32 {
     print!("Please choose what you want to store:\nOption 1: Blockchain name\n> ");
@@ -52,10 +65,26 @@ fn get_selected_option() -> u32 {
 }
 
 /// Fetch blockchain name from the WebSocket connection
-async fn fetch_blockchain_name(client: WsClient) {
-    match get_blockchain_name(client).await {
-        Ok(name) => println!("Blockchain name: {:?}", name),
-        Err(err) => println!("Error retrieving blockchain name: {}", err),
+async fn fetch_blockchain_name(client: WsClient){
+    let get_blockchain_name = get_blockchain_name(client).await;
+    match get_blockchain_name {
+        Ok(ref name) => println!("Blockchain name: {:?}", name),
+        Err(ref err) => println!("Error retrieving blockchain name: {}", err),
+    }
+
+
+    println!("Do you want to store in the database? ");
+
+    let mut command = String::new();
+    io::stdin().read_line(&mut command).unwrap();
+    let command: String = command.to_lowercase().trim().parse().unwrap();
+
+    let blockchain = get_blockchain_name.unwrap();
+
+    match command.as_ref() {
+        "store" => store_blockchain(&blockchain),
+        "exit" =>  println!("Thank you "),
+        _ => println!("Not a correct key word")
     }
 }
 
@@ -80,6 +109,8 @@ async fn main() {
                 } else {
                     println!("Invalid option selected.");
                 }
+
+
             }
             Err(error) => println!("{}", error),
         }
