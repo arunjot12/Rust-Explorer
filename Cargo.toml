@@ -7,3 +7,4 @@ edition = "2024"
 jsonrpsee = { version = "0.25.1", features = ["async-client", "ws-client"] }
 tokio = { version = "1", features = ["full"] }
 jsonrpsee-ws-client = { version = "0.2.0-alpha.7" }
+diesel = "2.2.10"
