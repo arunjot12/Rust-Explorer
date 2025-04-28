@@ -4,3 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+jsonrpsee = { version = "0.25.1", features = ["async-client", "ws-client"] }
+tokio = { version = "1", features = ["full"] }
+jsonrpsee-ws-client = { version = "0.2.0-alpha.7" }
