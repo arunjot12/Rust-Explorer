@@ -1,10 +1,12 @@
-use std::io::{self, Write};
-use jsonrpsee::ws_client::{WsClient, WsClientBuilder};
+use self::models::Blockchain;
 use diesel::prelude::*;
 use dotenvy::dotenv;
+use jsonrpsee::ws_client::{WsClient, WsClientBuilder};
 use models::NewBlockchain;
-use self::models::Blockchain;
+use rocket::{self, launch, routes};
 use std::env;
+use std::io::{self, Write};
+use std::thread;
 
 mod blockchain_api;
 mod blockchain_data;
@@ -32,24 +34,25 @@ async fn establish_ws_connection(endpoint: &str) -> Result<WsClient, String> {
 fn get_websocket_endpoint() -> String {
     print!("Please enter the WebSocket endpoint for the blockchain: ");
     io::stdout().flush().unwrap();
-    
+
     let mut endpoint = String::new();
     io::stdin()
         .read_line(&mut endpoint)
         .expect("Failed to read line");
-    
+
     endpoint.trim().to_string()
 }
 
 // Store the name in the database
-fn store_blockchain(blockchain:&str){
-
-    let new_blockchain = NewBlockchain { blockchain_name:blockchain };
+fn store_blockchain(blockchain: &str) {
+    let new_blockchain = NewBlockchain {
+        blockchain_name: blockchain,
+    };
 
     diesel::insert_into(schema::blockchain_info::table)
-    .values(&new_blockchain)
-    .get_result::<Blockchain>(&mut establish_connection())
-    .expect("Error saving new post");
+        .values(&new_blockchain)
+        .get_result::<Blockchain>(&mut establish_connection())
+        .expect("Error saving new post");
 }
 
 /// Handle user input for the selected option
@@ -66,13 +69,12 @@ fn get_selected_option() -> u32 {
 }
 
 /// Fetch blockchain name from the WebSocket connection
-async fn fetch_blockchain_name(client: WsClient){
+async fn fetch_blockchain_name(client: WsClient) {
     let get_blockchain_name = get_blockchain_name(client).await;
     match get_blockchain_name {
         Ok(ref name) => println!("Blockchain name: {:?}", name),
         Err(ref err) => println!("Error retrieving blockchain name: {}", err),
     }
-
 
     println!("Do you want to store in the database? ");
 
@@ -84,25 +86,39 @@ async fn fetch_blockchain_name(client: WsClient){
 
     match command.as_ref() {
         "store" => store_blockchain(&blockchain),
-        "exit" =>  println!("Thank you "),
-        _ => println!("Not a correct key word")
+        "exit" => println!("Thank you "),
+        _ => println!("Not a correct key word"),
     }
+}
+
+// Rocket server launch configuration
+async fn rocket() {
+    let _ = rocket::build()
+        .mount("/", blockchain_api::rocket_routes())
+        .launch()
+        .await;
 }
 
 #[tokio::main]
 async fn main() {
     println!("Hello! Welcome to the Blockchain World");
 
+    // Start the Rocket server in a separate thread
+    tokio::spawn(async {
+        rocket().await;
+    });
+
+
     let endpoint = get_websocket_endpoint();
- 
+
     // Check if endpoint starts with "ws"
     if endpoint.starts_with("ws") {
         println!("Checking the connection...");
-        
+
         match establish_ws_connection(&endpoint).await {
             Ok(client) => {
                 println!("Connection Established!");
-                
+
                 // Get user's choice and fetch blockchain name if option 1 is selected
                 let selected_option = get_selected_option();
                 if selected_option == 1 {
@@ -110,12 +126,15 @@ async fn main() {
                 } else {
                     println!("Invalid option selected.");
                 }
-
-
             }
             Err(error) => println!("{}", error),
         }
     } else {
         println!("Invalid WebSocket endpoint. It should start with 'ws'.");
+    }
+
+    // Simple way to keep the main thread alive
+    loop {
+        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
     }
 }

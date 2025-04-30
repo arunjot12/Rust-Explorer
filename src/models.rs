@@ -1,8 +1,7 @@
 use diesel::prelude::*;
-use serde::{Serialize, Deserialize};
-use jsonrpsee_ws_client::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Queryable,Serialize, Selectable)]
+#[derive(Queryable, Serialize, Deserialize, Selectable)]
 #[diesel(table_name = crate::schema::blockchain_info)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Blockchain {

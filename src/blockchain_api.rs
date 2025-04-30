@@ -1,18 +1,23 @@
-use rocket::{get, routes, State};
-use rocket::serde::json::Json;
-use crate::models::Blockchain;
 use crate::establish_connection;
-use diesel::RunQueryDsl;
+use crate::models::Blockchain;
 use crate::schema::blockchain_info::dsl::*;
+use diesel::RunQueryDsl;
+use rocket::serde::json::Json;
+use rocket::{State, get, routes};
 
 /// Returns all blockchain data stored in the database
-#[get("/blockchains")]
+#[get("/")]
 pub fn get_all_blockchains() -> Json<Vec<Blockchain>> {
     let mut connection = establish_connection();
-    
+
     let results = blockchain_info
         .load::<Blockchain>(&mut connection)
         .expect("Error loading blockchains");
-    
+
     Json(results)
+}
+
+/// Configure and mount the Rocket routes
+pub fn rocket_routes() -> Vec<rocket::Route> {
+    routes![get_all_blockchains]
 }
