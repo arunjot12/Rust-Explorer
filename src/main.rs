@@ -6,6 +6,7 @@ use models::NewBlockchain;
 use self::models::Blockchain;
 use std::env;
 
+mod blockchain_api;
 mod blockchain_data;
 pub use blockchain_data::*;
 
@@ -93,7 +94,7 @@ async fn main() {
     println!("Hello! Welcome to the Blockchain World");
 
     let endpoint = get_websocket_endpoint();
-
+ 
     // Check if endpoint starts with "ws"
     if endpoint.starts_with("ws") {
         println!("Checking the connection...");
