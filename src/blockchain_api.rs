@@ -3,7 +3,7 @@ use crate::models::Blockchain;
 use crate::schema::blockchain_info::dsl::*;
 use diesel::RunQueryDsl;
 use rocket::serde::json::Json;
-use rocket::{State, get, routes};
+use rocket::{get, routes};
 
 /// Returns all blockchain data stored in the database
 #[get("/")]
@@ -20,4 +20,13 @@ pub fn get_all_blockchains() -> Json<Vec<Blockchain>> {
 /// Configure and mount the Rocket routes
 pub fn rocket_routes() -> Vec<rocket::Route> {
     routes![get_all_blockchains]
+}
+
+// Rocket server launch configuration
+pub async fn rocket_launch() {
+    println!("🛰️ Launching the Rocket server... 🚀");
+    let _ = rocket::build()
+        .mount("/", crate::blockchain_api::rocket_routes())
+        .launch()
+        .await;
 }
