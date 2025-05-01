@@ -32,7 +32,7 @@ async fn establish_ws_connection(endpoint: &str) -> Result<WsClient, String> {
 
 /// Handle user input for the WebSocket endpoint
 fn get_websocket_endpoint() -> String {
-    print!("Please enter the WebSocket endpoint for the blockchain: ");
+    print!("🔧 Please enter the WebSocket endpoint for the blockchain: ");
     io::stdout().flush().unwrap();
 
     let mut endpoint = String::new();
@@ -52,12 +52,16 @@ fn store_blockchain(blockchain: &str) {
     diesel::insert_into(schema::blockchain_info::table)
         .values(&new_blockchain)
         .get_result::<Blockchain>(&mut establish_connection())
-        .expect("Error saving new post");
+        .expect("💥 Error saving new blockchain");
+
+    println!("✅ Blockchain name successfully stored in the database! 🗄️");
 }
 
 /// Handle user input for the selected option
 fn get_selected_option() -> u32 {
-    print!("Please choose what you want to store:\nOption 1: Blockchain name\n> ");
+    print!(
+        "📋 Please choose what you want to see:\n1️⃣  Option 1: Blockchain name\n2️⃣  Option 2: Nothing\n👉 Your choice: "
+    );
     io::stdout().flush().unwrap();
 
     let mut option_input = String::new();
@@ -78,17 +82,24 @@ async fn fetch_blockchain_name(client: WsClient) {
 
     println!("Do you want to store in the database? ");
 
-    let mut command = String::new();
-    io::stdin().read_line(&mut command).unwrap();
-    let command: String = command.to_lowercase().trim().parse().unwrap();
+    let user_input = user_input();
+
+    let command: String = user_input.to_lowercase().trim().parse().unwrap();
 
     let blockchain = get_blockchain_name.unwrap();
 
     match command.as_ref() {
         "store" => store_blockchain(&blockchain),
-        "exit" => println!("Thank you "),
-        _ => println!("Not a correct key word"),
+        "exit" => println!("👋 Goodbye!"),
+        _ => println!("❗ Not a recognized keyword. Try again!"),
     }
+}
+
+// Take the input from the user
+fn user_input() -> String {
+    let mut command = String::new();
+    io::stdin().read_line(&mut command).unwrap();
+    command
 }
 
 // Rocket server launch configuration
@@ -101,36 +112,35 @@ async fn rocket() {
 
 #[tokio::main]
 async fn main() {
-    println!("Hello! Welcome to the Blockchain World");
+    println!("🚀 Hello! Welcome to the Blockchain World 🌐");
 
     // Start the Rocket server in a separate thread
     tokio::spawn(async {
         rocket().await;
     });
 
-
     let endpoint = get_websocket_endpoint();
 
     // Check if endpoint starts with "ws"
     if endpoint.starts_with("ws") {
-        println!("Checking the connection...");
+        println!("🔌 Connecting to the blockchain WebSocket endpoint...");
 
         match establish_ws_connection(&endpoint).await {
             Ok(client) => {
-                println!("Connection Established!");
+                println!("✅ Connection Established! 🎉");
 
                 // Get user's choice and fetch blockchain name if option 1 is selected
                 let selected_option = get_selected_option();
                 if selected_option == 1 {
                     fetch_blockchain_name(client).await;
                 } else {
-                    println!("Invalid option selected.");
+                    println!("👋 Thank you for visiting the site. Have a great day!");
                 }
             }
-            Err(error) => println!("{}", error),
+            Err(error) => println!("❌ {}", error),
         }
     } else {
-        println!("Invalid WebSocket endpoint. It should start with 'ws'.");
+        println!("⚠️ Invalid WebSocket endpoint. It should start with 'ws://' or 'wss://'.");
     }
 
     // Simple way to keep the main thread alive
