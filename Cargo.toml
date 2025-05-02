@@ -11,3 +11,5 @@ diesel = { version = "2.2.0", features = ["postgres"] }
 dotenvy = "0.15"
 rocket = { version = "0.5.1", features = ["json"] }
 serde = "1.0.219"
+substrate-api-client = "1.17.0"
+scale-codec = { package = "parity-scale-codec", version = "3.6.12", default-features = false, features = ["derive"] }

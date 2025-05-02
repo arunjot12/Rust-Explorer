@@ -41,7 +41,7 @@ fn get_websocket_endpoint() -> String {
 /// Handle user input for the selected option
 fn get_selected_option() -> u32 {
     print!(
-        "📋 Please choose what you want to see:\n1️⃣  Option 1: Blockchain name\n2️⃣  Option 2: Nothing\n👉 Your choice: "
+        "📋 Please choose what you want to see:\n1️⃣  Option 1: Blockchain Details\n2️⃣  Option 2: Nothing\n👉 Your choice: "
     );
     io::stdout().flush().unwrap();
 
@@ -74,6 +74,13 @@ async fn fetch_blockchain_name(client: WsClient) {
     }
 }
 
+// Fetch blockchain name from the WebSocket connection
+async fn validator_set() {
+    let validators = current_validators().await;
+    println!("Validator Set {:?}",validators);
+
+}
+
 // Check the Data and store in the Blockchain
 async fn store_blockchain(){
     println!("💾 Preparing to store blockchain data...");
@@ -91,6 +98,7 @@ async fn store_blockchain(){
                 let selected_option = get_selected_option();
                 if selected_option == 1 {
                     fetch_blockchain_name(client).await;
+                    validator_set().await;
                 } else {
                     println!("👋 Thank you for visiting the site. Have a great day!");
                 }
