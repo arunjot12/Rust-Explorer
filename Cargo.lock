@@ -3342,6 +3342,7 @@ dependencies = [
  "parity-scale-codec",
  "rocket",
  "serde",
+ "serde_json",
  "substrate-api-client",
  "tokio",
 ]

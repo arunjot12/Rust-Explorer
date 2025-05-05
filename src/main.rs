@@ -1,5 +1,5 @@
 use jsonrpsee::ws_client::WsClient;
-use std::io::{self, Write};
+use std::{io::{self,Error, Write}};
 
 mod blockchain_api;
 mod blockchain_data;
@@ -54,31 +54,19 @@ fn get_selected_option() -> u32 {
 }
 
 /// Fetch blockchain name from the WebSocket connection
-async fn fetch_blockchain_name(client: WsClient) {
+async fn fetch_blockchain_name(client: WsClient) -> Result<String,Error> {
     let get_blockchain_name = get_blockchain_name(client).await;
     match get_blockchain_name {
         Ok(ref name) => println!("Blockchain name: {:?}", name),
         Err(ref err) => println!("Error retrieving blockchain name: {}", err),
     }
-
-    println!("Do you want to store in the database? ");
-
-    let user_input = user_input();
-    let command: String = user_input.to_lowercase().trim().parse().unwrap();
-    let blockchain = get_blockchain_name.unwrap();
-
-    match command.as_ref() {
-        "store" => store_db(&blockchain),
-        "exit" => println!("👋 Goodbye!"),
-        _ => println!("❗ Not a recognized keyword. Try again!"),
-    }
+   get_blockchain_name
 }
 
 // Fetch blockchain name from the WebSocket connection
-async fn validator_set() {
+async fn validator_set() -> Vec<AccountId20>{
     let validators = current_validators().await;
-    println!("Validator Set {:?}",validators);
-
+    validators
 }
 
 // Check the Data and store in the Blockchain
@@ -97,8 +85,21 @@ async fn store_blockchain(){
                 // Get user's choice and fetch blockchain name if option 1 is selected
                 let selected_option = get_selected_option();
                 if selected_option == 1 {
-                    fetch_blockchain_name(client).await;
-                    validator_set().await;
+                   let name=  fetch_blockchain_name(client).await;
+                   let validators =   validator_set().await;
+                    println!("{:?},{:?}",name,validators);
+
+                    println!("Do you want to store in this in the database?");
+
+                    let user_input = user_input();
+                    let command: String = user_input.to_lowercase().trim().parse().unwrap();
+                
+                    match command.as_ref() {
+                        "store" => store_db(&name,validators),
+                        "exit" => println!("👋 Goodbye!"),
+                        _ => println!("❗ Not a recognized keyword. Try again!"),
+                    }
+
                 } else {
                     println!("👋 Thank you for visiting the site. Have a great day!");
                 }

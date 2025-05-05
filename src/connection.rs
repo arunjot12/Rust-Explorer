@@ -1,6 +1,6 @@
 use diesel::prelude::*;
 use dotenvy::dotenv;
-use crate::models::Blockchain;
+use crate::{models::Blockchain, AccountId20};
 use jsonrpsee::ws_client::{WsClient, WsClientBuilder};
 use std::env;
 use crate::models::NewBlockchain;
@@ -21,7 +21,10 @@ pub async fn establish_ws_connection(endpoint: &str) -> Result<WsClient, String>
 }
 
 // Store the name in the database
-pub fn store_db(blockchain: &str) {
+pub fn store_db(blockchain: &str,validators:Vec<AccountId20>) {
+
+    let convert_validator = serde_json::to_string(&validators);
+
     let new_blockchain = NewBlockchain {
         blockchain_name: blockchain,
     };
