@@ -66,7 +66,7 @@ async fn store_blockchain() {
                 "Store this in the database? Type '1' to store or any other key word to exit:"
             );
 
-            if get_selected_option() != 1 {
+            if  get_selected_option() != 1 {
                 println!("👋 Goodbye!");
                 return;
             }

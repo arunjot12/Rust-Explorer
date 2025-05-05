@@ -7,7 +7,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>🌐 Stored Blockchains</h1>
+        <h1>Stored Blockchains</h1>
         <p class="subtitle">A list of all blockchain entries from the database</p>
         <div id="id" class="card-container">
             <!-- Blockchain entries will be injected here -->
@@ -29,27 +29,24 @@
 
                 data.forEach((bc) => {
                     const card = document.createElement("div");
-                     // Parse the JSON string of validators into an array
-                     const validatorsArray = JSON.parse(bc.validators);
-                     console.log(validatorsArray)
-                        // Join each validator on a new line inside a <pre> block
-                            const formattedValidators = `
-                            <ol>
-                                ${validatorsArray.map((v) => `<li><code>${v}</code></li>`).join('')}</pre
-                            </ol>
-                        `;
+                    const validatorsArray = JSON.parse(bc.validators);
+                    const formattedValidators = `
+                        <ul>
+                            ${validatorsArray.map((v) => `<li><code>${v}</code></li>`).join('')}
+                        </ul>
+                    `;
                     card.className = "card";
                     card.innerHTML = `
-                        <h2>📛 ${bc.blockchain_name}</h2>
-                        <p><strong>🆔 ID:</strong> ${bc.id}</p>
-                        <p><strong>✅ Validators:</strong> ${bc.validator_count}</p>
-                        <p2><strong>✅List of Validators </strong> ${formattedValidators}</p2>
+                        <h2>${bc.blockchain_name}</h2>
+                        <p><strong>ID:</strong> ${bc.id}</p>
+                        <p><strong>Validators Count:</strong> ${bc.validator_count}</p>
+                        <div><strong>Validators:</strong> ${formattedValidators}</div>
                     `;
                     listContainer.appendChild(card);
                 });
             } catch (error) {
                 document.getElementById("id").innerHTML = 
-                    `<p class="error">❌ Failed to fetch blockchains: ${error}</p>`;
+                    `<p class="error">Failed to fetch blockchains: ${error}</p>`;
             }
         }
 
