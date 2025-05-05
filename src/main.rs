@@ -56,11 +56,11 @@ async fn store_blockchain() {
                 validators.len()
             );
 
-            let hex_validators: Vec<String> = validators
-                .iter()
-                .map(|v| hex::encode(v.0))
-                .inspect(|v| println!("Validator: {}", v))
-                .collect();
+                let hex_validators: Vec<String> = validators
+                    .iter()
+                    .map(|v| format!("0x{}", hex::encode(v.0)))
+                    .inspect(|v| println!("Validator: {:?}", v))
+                    .collect();
 
             println!(
                 "Store this in the database? Type '1' to store or any other key word to exit:"
@@ -93,7 +93,6 @@ async fn delete_blockchain() {
     println!("🗑️ Please enter the ID of the blockchain you want to delete:");
 
     let user_input = get_selected_option() as i32;
-
     let id: Vec<i32> = results.iter().map(|v| v.id).collect();
 
     if id.contains(&user_input) {
