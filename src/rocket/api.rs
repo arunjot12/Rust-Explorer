@@ -26,7 +26,7 @@ pub fn rocket_routes() -> Vec<rocket::Route> {
 pub async fn rocket_launch() {
     println!("🛰️ Launching the Rocket server... 🚀");
     let _ = rocket::build()
-        .mount("/", crate::blockchain_api::rocket_routes())
+        .mount("/", crate::rocket_routes())
         .launch()
         .await;
 }
