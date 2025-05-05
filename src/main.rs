@@ -1,5 +1,5 @@
 use jsonrpsee::ws_client::WsClient;
-use std::{io::{self,Error, Write}};
+use std::{io::{self,Error, Write}, vec};
 
 mod blockchain_api;
 mod blockchain_data;
@@ -63,12 +63,6 @@ async fn fetch_blockchain_name(client: WsClient) -> Result<String,Error> {
    get_blockchain_name
 }
 
-// Fetch blockchain name from the WebSocket connection
-async fn validator_set() -> Vec<AccountId20>{
-    let validators = current_validators().await;
-    validators
-}
-
 // Check the Data and store in the Blockchain
 async fn store_blockchain(){
     println!("💾 Preparing to store blockchain data...");
@@ -86,16 +80,22 @@ async fn store_blockchain(){
                 let selected_option = get_selected_option();
                 if selected_option == 1 {
                    let name=  fetch_blockchain_name(client).await;
-                   let validators =   validator_set().await;
-                    println!("{:?},{:?}",name,validators);
-
+                   let validators =   current_validators().await;
+                   let total_validators = validators.len() as i32;
+                   println!("Total Active Validators = {:?}",total_validators);
+                   let mut converted_validators :Vec<String>= vec![];
+                   for i in &validators{
+                    println!("List of validators {:?},",hex::encode(i.0));
+                    let encoded_validator = hex::encode(i.0);
+                    converted_validators.push(encoded_validator);
+                   }
                     println!("Do you want to store in this in the database?");
 
                     let user_input = user_input();
                     let command: String = user_input.to_lowercase().trim().parse().unwrap();
                 
                     match command.as_ref() {
-                        "store" => store_db(&name,validators),
+                        "store" => store_db(&name.unwrap(),converted_validators,total_validators),
                         "exit" => println!("👋 Goodbye!"),
                         _ => println!("❗ Not a recognized keyword. Try again!"),
                     }

@@ -3337,6 +3337,7 @@ version = "0.1.0"
 dependencies = [
  "diesel",
  "dotenvy",
+ "hex",
  "jsonrpsee 0.25.1",
  "jsonrpsee-ws-client 0.2.0",
  "parity-scale-codec",
