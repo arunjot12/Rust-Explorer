@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blockchain Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🌐 Stored Blockchains</h1>
+        <p class="subtitle">A list of all blockchain entries from the database</p>
+        <div id="id" class="card-container">
+            <!-- Blockchain entries will be injected here -->
+        </div>
+    </div>
+
+    <script>
+        async function fetchBlockchains() {
+            try {
+                const response = await fetch("http://127.0.0.1:8000/get_all_blockchains/get_all_blockchains");
+
+                const data = await response.json();
+                console.log(data,"data")
+
+                const listContainer = document.getElementById("id");
+                if (data.length === 0) {
+                    listContainer.innerHTML = "<p class='empty'>No blockchains found 😢</p>";
+                    return;
+                }
+
+                data.forEach((bc) => {
+                    const card = document.createElement("div");
+                    card.className = "card";
+                    card.innerHTML = `
+                        <h2>📛 ${bc.blockchain_name}</h2>
+                        <p><strong>🆔 ID:</strong> ${bc.id}</p>
+                        <p><strong>✅ Validators:</strong> ${bc.validator_count}</p>
+                    `;
+                    listContainer.appendChild(card);
+                });
+            } catch (error) {
+                document.getElementById("id").innerHTML = 
+                    `<p class="error">❌ Failed to fetch blockchains: ${error}</p>`;
+            }
+        }
+
+        fetchBlockchains();
+    </script>
+</body>
+</html>

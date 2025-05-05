@@ -2,11 +2,12 @@ use crate::establish_connection;
 use crate::models::Blockchain;
 use crate::schema::blockchain_info::dsl::*;
 use diesel::RunQueryDsl;
+use crate::rocket::cors::CORS; // if cors.rs is in the same crate
 use rocket::serde::json::Json;
 use rocket::{get, routes};
 
 /// Returns all blockchain data stored in the database
-#[get("/")]
+#[get("/get_all_blockchains")]
 pub fn get_all_blockchains() -> Json<Vec<Blockchain>> {
     let mut connection = establish_connection();
 
@@ -26,7 +27,8 @@ pub fn rocket_routes() -> Vec<rocket::Route> {
 pub async fn rocket_launch() {
     println!("🛰️ Launching the Rocket server... 🚀");
     let _ = rocket::build()
-        .mount("/", crate::rocket_routes())
+        .attach(CORS)
+        .mount("/get_all_blockchains", crate::rocket_routes())
         .launch()
         .await;
 }
