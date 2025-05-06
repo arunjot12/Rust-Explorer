@@ -18,7 +18,7 @@ async fn main() {
     match main_menu() {
         1 => rocket_launch().await,
         2 => store_blockchain().await,
-        3 => delete_blockchain().await,
+        3 => verify_blockchain().await,
         _ => println!("❌ Invalid choice. Restart the program."),
     }
 }
@@ -56,17 +56,17 @@ async fn store_blockchain() {
                 validators.len()
             );
 
-                let hex_validators: Vec<String> = validators
-                    .iter()
-                    .map(|v| format!("0x{}", hex::encode(v.0)))
-                    .inspect(|v| println!("Validator: {:?}", v))
-                    .collect();
+            let hex_validators: Vec<String> = validators
+                .iter()
+                .map(|v| format!("0x{}", hex::encode(v.0)))
+                .inspect(|v| println!("Validator: {:?}", v))
+                .collect();
 
             println!(
                 "Store this in the database? Type '1' to store or any other key word to exit:"
             );
 
-            if  get_selected_option() != 1 {
+            if get_selected_option() != 1 {
                 println!("👋 Goodbye!");
                 return;
             }
@@ -76,13 +76,13 @@ async fn store_blockchain() {
     }
 }
 
-async fn delete_blockchain() {
+async fn verify_blockchain() {
     let mut connection = establish_connection();
     let results = schema::blockchain_info::table
         .load::<Blockchain>(&mut connection)
         .expect("Some Error occured");
 
-    println!("🌐 Current Blockchains:");
+     println!("🌐 Current Blockchains:");
 
     let _: Vec<&Blockchain> = results
         .iter()
@@ -90,20 +90,28 @@ async fn delete_blockchain() {
         .inspect(|v| println!("🆔  id {} ,📛 Name : {:?}", v.id, v.blockchain_name))
         .collect();
 
-    println!("🗑️ Please enter the ID of the blockchain you want to delete:");
+     println!("🗑️ Please enter the ID of the blockchain you want to delete:");
+
 
     let user_input = get_selected_option() as i32;
     let id: Vec<i32> = results.iter().map(|v| v.id).collect();
 
     if id.contains(&user_input) {
-        println!("🧹 Deleting blockchain ID {}...", user_input);
-        match diesel::delete(schema::blockchain_info::table.find(user_input))
-            .execute(&mut connection)
-        {
-            Ok(_) => println!("✅ Successfully deleted blockchain with ID {}.", user_input),
-            Err(e) => println!("❌ Error deleting blockchain: {:?}", e),
-        }
-    } else {
+        delete_blockchain(user_input);
+    }
+    else{
         println!("⚠️ Invalid ID entered. No matching blockchain found.");
     }
 }
+
+fn delete_blockchain(id:i32) {
+    let mut connection = establish_connection();
+
+        match diesel::delete(schema::blockchain_info::table.find(id))
+            .execute(&mut connection)
+        {
+            Ok(_) => println!("✅ Successfully deleted blockchain with ID {}.", id),
+            Err(e) => println!("❌ Error deleting blockchain: {:?}", e),
+        }
+    } 
+

@@ -67,7 +67,7 @@ h1 {
 }
 
 .card code {
-    background-color: #333;
+    /* background-color: #333; */
     color: #f4f4f4;
     padding: 4px 8px;
     border-radius: 5px;
@@ -82,12 +82,45 @@ h1 {
     color: #ff5757;
 }
 
-ul {
+ol {
     list-style-type: none;
-    padding-left: 0;
+    padding-left: 10px;
+    background: transparent;
 }
 
-ul li {
+ol li {
     padding: 5px 0;
     color: #dcdcdc;
 }
+
+button {
+    background: none;
+    color: white;
+    border:#fc5c7d;
+    cursor: pointer;
+    border-radius: 100px;
+}
+button:hover {
+    background-color: rgb(223, 223, 223);
+}
+
+input, textarea, button {
+    font-size: 1rem;
+    background-color: white;
+    padding: 0.5rem;
+    /* border-radius: 500p; */
+    width: 17%;
+    background: none;
+    margin-top: 0.5rem;
+    border-radius: 14px;
+    text-decoration-style: initial;
+    align-items: center;
+    border: 1px solid #ffffff;;
+}
+
+#blockchain_id::placeholder {
+    color: white;
+    align-items: center;
+    opacity: 0.4; /* Optional: makes sure the white is fully opaque */
+  }
+  
