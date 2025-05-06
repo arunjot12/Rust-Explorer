@@ -1,7 +1,7 @@
 use rocket::{
     Request, Response,
     fairing::{Fairing, Info, Kind},
-    http::{Header, Method},
+    http::Header,
 };
 
 

@@ -7,24 +7,72 @@
 </head>
 <body>
     <div class="container">
-        <h1>Stored Blockchains</h1>
-        <p class="subtitle">A list of all blockchain entries from the database</p>
-        <div id="id" class="card-container">
-            <!-- Blockchain entries will be injected here -->
+        <h1>Blockchain Dashboard</h1>
+        <p class="subtitle">Step 1: Enter WSS Endpoint</p>
+
+        <!-- WSS Endpoint Input -->
+        <input type="text" id="wss_endpoint" placeholder="wss://your-node-endpoint" />
+        <button onclick="verifyWss()">Verify Endpoint</button>
+
+        <!-- Step 2: Fetch Blockchains -->
+        <div id="fetch-section" style="display:none;">
+            <p class="subtitle">Step 2: Fetch Stored Blockchains</p>
+            <button onclick="fetchBlockchains()">Get Blockchains</button>
         </div>
-        <p class="subtitle">Delete the blockchain from the Database</p>
-        <input type="text" id="blockchain_id" placeholder= "Blockchain Id" />
-        <button type ="submit"  class="btn btn-primary" onclick="Deleteblockchains()">Submit</button>
+
+        <!-- Blockchain List Display -->
+        <div id="id" class="card-container"></div>
+
+        <!-- Step 3: Delete Blockchain -->
+        <div id="delete-section" style="display:none;">
+            <p class="subtitle">Step 3: Delete a Blockchain by ID</p>
+            <input type="text" id="blockchain_id" placeholder="Blockchain ID" />
+            <button class="delete-btn" onclick="deleteBlockchain()">Delete</button>
+        </div>
     </div>
 
     <script>
+        async function verifyWss() {
+            const endpoint = document.getElementById("wss_endpoint").value.trim();
+
+            if (!endpoint || (!endpoint.startsWith("wss://") && !endpoint.startsWith("ws://"))) {
+                alert("Please enter a valid WSS/WS URL.");
+                return;
+            }
+
+            try {
+                const response = await fetch("http://127.0.0.1:8000/endpoint_checker", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ endpoint })
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    alert("WSS verification failed.");
+                    return;
+                }
+
+                if (data.status === "success") {
+                    alert("✅ WSS endpoint is valid.");
+                    document.getElementById("fetch-section").style.display = "block";
+                } else {
+                    alert("WSS verification failed.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("❌ Could not connect to the server.");
+            }
+        }
+
         async function fetchBlockchains() {
             try {
                 const response = await fetch("http://127.0.0.1:8000/get_all_blockchains");
-
                 const data = await response.json();
 
                 const listContainer = document.getElementById("id");
+                listContainer.innerHTML = "";
+
                 if (data.length === 0) {
                     listContainer.innerHTML = "<p class='empty'>No blockchains found 😢</p>";
                     return;
@@ -34,9 +82,7 @@
                     const card = document.createElement("div");
                     const validatorsArray = JSON.parse(bc.validators);
                     const formattedValidators = `
-                        <ol>
-                            ${validatorsArray.map((v) => `<li><code>${v}</code></li>`).join('')}
-                        </ol>
+                        <ol>${validatorsArray.map((v) => `<li><code>${v}</code></li>`).join('')}</ol>
                     `;
                     card.className = "card";
                     card.innerHTML = `
@@ -47,43 +93,40 @@
                     `;
                     listContainer.appendChild(card);
                 });
-            } catch (error) {
+
+                document.getElementById("delete-section").style.display = "block";
+            } catch (err) {
+                console.error(err);
                 document.getElementById("id").innerHTML = 
-                    `<p class="error">Failed to fetch blockchains: ${error}</p>`;
+                    `<p class="error">Failed to fetch blockchains: ${err}</p>`;
             }
-        }   
-
-        async function Deleteblockchains() {
-        const blockchainId = document.getElementById("blockchain_id").value.trim();
-
-        if (!blockchainId) {
-            alert("Please enter a Blockchain ID to delete.");
-            return;
         }
 
-        try {
-            const response = await fetch("http://127.0.0.1:8000/delete_blockchains", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ id: parseInt(blockchainId) })
-            });
+        async function deleteBlockchain() {
+            const id = document.getElementById("blockchain_id").value.trim();
 
-            if (!response.ok) {
-                throw new Error(`Server responded with status ${response.status}`);
+            if (!id || isNaN(parseInt(id))) {
+                alert("Please enter a valid numeric Blockchain ID.");
+                return;
             }
 
-            alert("Blockchain deleted successfully!");
-            document.getElementById("id").innerHTML = "";
-            document.getElementById("blockchain_id").value = "";
-            fetchBlockchains(); // Refresh the list
-        } catch (err) {
-            alert("Deletion failed.");
-            console.error(err);
+            try {
+                const response = await fetch("http://127.0.0.1:8000/delete_blockchains", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id: parseInt(id) })
+                });
+
+                if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
+                alert("✅ Blockchain deleted successfully!");
+                document.getElementById("blockchain_id").value = "";
+                fetchBlockchains();
+            } catch (err) {
+                alert("❌ Deletion failed.");
+                console.error(err);
+            }
         }
-    }
-        fetchBlockchains();
     </script>
 </body>
 </html>

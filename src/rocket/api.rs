@@ -5,10 +5,12 @@ use crate::models::Blockchain;
 use crate::rocket::cors::CORS; // if cors.rs is in the same crate
 use crate::schema::blockchain_info::dsl::*;
 use diesel::RunQueryDsl;
-use crate::rocket::cors::options_delete_blockchain;
 use rocket::serde::json::Json;
+use serde_json::json;
+use rocket::serde::json::Value;
 use rocket::serde::{Deserialize, Serialize};
 use rocket::{get, post, routes};
+use rocket::http::Status;
 
 #[derive(Serialize, Deserialize)]
 pub struct Id{
@@ -34,12 +36,18 @@ pub fn get_all_blockchains() -> Json<Vec<Blockchain>> {
 }
 
 // Verify Endpoint is working or not
-#[post("/endpoint_checker",data = "<input>")]
-pub async fn verify_wss(input: Json<Wss>) {
-     match establish_ws_connection(&input.endpoint).await {
-        Ok(_) =>  println!("✅ Connection Established! 🎉"),
-        Err(error) => println!("❌ {}", error),
-    };
+#[post("/endpoint_checker", data = "<input>")]
+pub async fn verify_wss(input: Json<Wss>) -> Result<Json<Value>, Status> {
+    match establish_ws_connection(&input.endpoint).await {
+        Ok(_) => {
+            println!("✅ Connection Established! 🎉");
+            Ok(Json(json!({ "status": "success", "message": "Connection Established!" })))
+        },
+        Err(error) => {
+            println!("❌ {}", error);
+            Err(Status::InternalServerError)
+        }
+    }
 }
 
 /// Returns all blockchain data stored in the database
