@@ -4,7 +4,6 @@ use rocket::{
     http::Header,
 };
 
-
 #[rocket::options("/delete_blockchain")]
 pub fn options_delete_blockchain() -> &'static str {
     ""

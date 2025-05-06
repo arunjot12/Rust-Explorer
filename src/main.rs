@@ -1,15 +1,14 @@
 mod blockchain;
-use blockchain::{connection::*, data::*};
 pub mod cli;
-pub use cli::*;
 pub mod rocket;
-use diesel::QueryDsl;
-use diesel::RunQueryDsl;
-use models::Blockchain;
-use rocket::api::*;
-
 pub mod models;
 pub mod schema;
+
+use blockchain::{connection::*, data::*};
+pub use cli::*;
+use diesel::{QueryDsl, RunQueryDsl};
+use models::Blockchain;
+use rocket::api::*;
 
 #[tokio::main]
 async fn main() {

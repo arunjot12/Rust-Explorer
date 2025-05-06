@@ -1,9 +1,7 @@
 use std::io::{self, Write};
-use crate::Blockchain;
-use crate::establish_connection;
 use diesel::RunQueryDsl;
-use crate::delete_blockchain;
 
+use crate::{Blockchain, delete_blockchain, establish_connection};
 
 pub fn main_menu() -> u32 {
     println!(
