@@ -1,18 +1,26 @@
-use crate::delete_blockchain;
-use crate::establish_connection;
-use crate::models::Blockchain;
-use crate::rocket::cors::CORS; // if cors.rs is in the same crate
-use crate::schema::blockchain_info::dsl::*;
+use crate::{
+    delete_blockchain, establish_connection, establish_ws_connection,
+    models::Blockchain, rocket::cors::CORS, schema::blockchain_info::dsl::*,
+};
 use diesel::RunQueryDsl;
-use crate::rocket::cors::options_delete_blockchain;
-use rocket::serde::json::Json;
-use rocket::serde::{Deserialize, Serialize};
-use rocket::{get, post, routes};
+use rocket::{
+    get, post, routes,
+    http::Status,
+    serde::{json::{Json, Value}, Deserialize, Serialize},
+};
+use serde_json::json;
+
 
 #[derive(Serialize, Deserialize)]
 pub struct Id{
     id:i32
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct Wss{
+    endpoint:String
+}
+
 
 /// Returns all blockchain data stored in the database
 #[get("/get_all_blockchains")]
@@ -26,6 +34,21 @@ pub fn get_all_blockchains() -> Json<Vec<Blockchain>> {
     Json(results)
 }
 
+// Verify Endpoint is working or not
+#[post("/endpoint_checker", data = "<input>")]
+pub async fn verify_wss(input: Json<Wss>) -> Result<Json<Value>, Status> {
+    match establish_ws_connection(&input.endpoint).await {
+        Ok(_) => {
+            println!("✅ Connection Established! 🎉");
+            Ok(Json(json!({ "status": "success", "message": "Connection Established!" })))
+        },
+        Err(error) => {
+            println!("❌ {}", error);
+            Err(Status::InternalServerError)
+        }
+    }
+}
+
 /// Returns all blockchain data stored in the database
 #[post("/delete_blockchains", data = "<input>")]
 pub fn api_delete_blockchain(input: Json<Id>) ->  &'static str {
@@ -35,7 +58,7 @@ pub fn api_delete_blockchain(input: Json<Id>) ->  &'static str {
 
 /// Configure and mount the Rocket routes
 pub fn rocket_routes() -> Vec<rocket::Route> {
-    routes![get_all_blockchains,api_delete_blockchain]
+    routes![get_all_blockchains,api_delete_blockchain,verify_wss]
 }
 
 // Rocket server launch configuration

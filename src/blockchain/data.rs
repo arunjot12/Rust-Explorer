@@ -1,12 +1,12 @@
-use jsonrpsee::core::client::ClientT;
-use jsonrpsee::ws_client::WsClient;
+use jsonrpsee::{core::client::ClientT, ws_client::WsClient};
 use scale_codec::{Decode, Encode, MaxEncodedLen};
-use serde::Deserialize;
-use serde::Serialize;
-use substrate_api_client::Api;
-use substrate_api_client::GetStorage;
-use substrate_api_client::ac_primitives::DefaultRuntimeConfig;
-use substrate_api_client::rpc::JsonrpseeClient;
+use serde::{Deserialize, Serialize};
+use substrate_api_client::{
+    Api, GetStorage,
+    ac_primitives::DefaultRuntimeConfig,
+    rpc::JsonrpseeClient,
+};
+
 
 #[derive(
     Copy,

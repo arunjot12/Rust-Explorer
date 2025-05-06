@@ -1,9 +1,8 @@
 use rocket::{
     Request, Response,
     fairing::{Fairing, Info, Kind},
-    http::{Header, Method},
+    http::Header,
 };
-
 
 #[rocket::options("/delete_blockchain")]
 pub fn options_delete_blockchain() -> &'static str {
