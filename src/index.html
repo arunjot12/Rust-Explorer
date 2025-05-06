@@ -2,79 +2,135 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blockchain Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
 </head>
 <body>
     <div class="container">
-        <h1>Blockchain Dashboard</h1>
-        <p class="subtitle">Step 1: Enter WSS Endpoint</p>
-
-        <!-- WSS Endpoint Input -->
-        <input type="text" id="wss_endpoint" placeholder="wss://your-node-endpoint" />
-        <button onclick="verifyWss()">Verify Endpoint</button>
-
-        <!-- Step 2: Fetch Blockchains -->
-        <div id="fetch-section" style="display:none;">
-            <p class="subtitle">Step 2: Fetch Stored Blockchains</p>
-            <button onclick="fetchBlockchains()">Get Blockchains</button>
+        <div class="header">
+            <h1>Blockchain Dashboard</h1>
+            <div class="pill-badge">Beta</div>
         </div>
+        
+        <div class="steps-container">
+            <div class="step-box active">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Enter WSS Endpoint</h3>
+                    <div class="input-group">
+                        <input type="text" id="wss_endpoint" placeholder="wss://your-node-endpoint" />
+                        <button onclick="verifyWss()" class="primary-btn">Verify Endpoint</button>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Step 2: Fetch Blockchains -->
+            <div id="fetch-section" class="step-box" style="display:none;">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Fetch Stored Blockchains</h3>
+                    <button onclick="fetchBlockchains()" class="secondary-btn">Get Blockchains</button>
+                </div>
+            </div>
+    
+            <!-- Step 3: Delete Blockchain -->
+            <div id="delete-section" class="step-box" style="display:none;">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Delete a Blockchain</h3>
+                    <div class="input-group">
+                        <input type="text" id="blockchain_id" placeholder="Blockchain ID" />
+                        <button class="delete-btn" onclick="deleteBlockchain()">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr class="divider">
 
         <!-- Blockchain List Display -->
         <div id="id" class="card-container"></div>
-
-        <!-- Step 3: Delete Blockchain -->
-        <div id="delete-section" style="display:none;">
-            <p class="subtitle">Step 3: Delete a Blockchain by ID</p>
-            <input type="text" id="blockchain_id" placeholder="Blockchain ID" />
-            <button class="delete-btn" onclick="deleteBlockchain()">Delete</button>
-        </div>
     </div>
+
+    <footer>
+        <p>© 2025 Blockchain Dashboard</p>
+    </footer>
 
     <script>
         async function verifyWss() {
             const endpoint = document.getElementById("wss_endpoint").value.trim();
-
+            
             if (!endpoint || (!endpoint.startsWith("wss://") && !endpoint.startsWith("ws://"))) {
-                alert("Please enter a valid WSS/WS URL.");
+                showToast("Please enter a valid WSS/WS URL.", "error");
                 return;
             }
 
             try {
+                // Show loading state
+                const button = document.querySelector('button.primary-btn');
+                button.innerHTML = '<span class="loading-spinner"></span> Verifying...';
+                button.disabled = true;
+                
                 const response = await fetch("http://127.0.0.1:8000/endpoint_checker", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ endpoint })
                 });
 
+                // Reset button state
+                button.innerHTML = 'Verify Endpoint';
+                button.disabled = false;
+
                 const data = await response.json();
                 if (!response.ok) {
-                    alert("WSS verification failed.");
+                    showToast("WSS verification failed.", "error");
                     return;
                 }
 
                 if (data.status === "success") {
-                    alert("✅ WSS endpoint is valid.");
+                    showToast("WSS endpoint is valid!", "success");
                     document.getElementById("fetch-section").style.display = "block";
+                    // Make step 2 active
+                    document.querySelectorAll('.step-box')[0].classList.remove('active');
+                    document.querySelectorAll('.step-box')[1].classList.add('active');
                 } else {
-                    alert("WSS verification failed.");
+                    showToast("WSS verification failed.", "error");
                 }
             } catch (err) {
                 console.error(err);
-                alert("❌ Could not connect to the server.");
+                showToast("Could not connect to the server.", "error");
+                // Reset button state
+                const button = document.querySelector('button.primary-btn');
+                button.innerHTML = 'Verify Endpoint';
+                button.disabled = false;
             }
         }
 
         async function fetchBlockchains() {
             try {
+                // Show loading state
+                const button = document.querySelector('button.secondary-btn');
+                button.innerHTML = '<span class="loading-spinner"></span> Fetching...';
+                button.disabled = true;
+                
                 const response = await fetch("http://127.0.0.1:8000/get_all_blockchains");
                 const data = await response.json();
+
+                // Reset button state
+                button.innerHTML = 'Get Blockchains';
+                button.disabled = false;
 
                 const listContainer = document.getElementById("id");
                 listContainer.innerHTML = "";
 
                 if (data.length === 0) {
-                    listContainer.innerHTML = "<p class='empty'>No blockchains found 😢</p>";
+                    listContainer.innerHTML = "<div class='empty-state'><div class='empty-icon'>🔍</div><p>No blockchains found</p><p class='empty-subtitle'>Try creating one or check your connection</p></div>";
                     return;
                 }
 
@@ -86,46 +142,114 @@
                     `;
                     card.className = "card";
                     card.innerHTML = `
-                        <h2>${bc.blockchain_name}</h2>
-                        <p><strong>ID:</strong> ${bc.id}</p>
-                        <p><strong>Validators Count:</strong> ${bc.validator_count}</p>
-                        <div><strong>Validators:</strong> ${formattedValidators}</div>
+                        <div class="card-header">
+                            <h2>${bc.blockchain_name}</h2>
+                            <span class="badge">#${bc.id}</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="info-row">
+                                <span class="info-label">Validators:</span>
+                                <span class="info-value">${bc.validator_count}</span>
+                            </div>
+                            <div class="validators-section">
+                                <span class="info-label">Validator List:</span>
+                                ${formattedValidators}
+                            </div>
+                            <button class="icon-btn delete-card" onclick="prepareDelete(${bc.id})">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            </button>
+                        </div>
                     `;
                     listContainer.appendChild(card);
                 });
 
                 document.getElementById("delete-section").style.display = "block";
+                // Make step 3 active
+                document.querySelectorAll('.step-box')[1].classList.remove('active');
+                document.querySelectorAll('.step-box')[2].classList.add('active');
             } catch (err) {
                 console.error(err);
                 document.getElementById("id").innerHTML = 
-                    `<p class="error">Failed to fetch blockchains: ${err}</p>`;
+                    `<div class="error-message">Failed to fetch blockchains: ${err}</div>`;
+                // Reset button state
+                const button = document.querySelector('button.secondary-btn');
+                button.innerHTML = 'Get Blockchains';
+                button.disabled = false;
             }
+        }
+
+        function prepareDelete(id) {
+            document.getElementById("blockchain_id").value = id;
+            document.getElementById("blockchain_id").focus();
+            showToast(`Ready to delete blockchain #${id}`, "info");
         }
 
         async function deleteBlockchain() {
             const id = document.getElementById("blockchain_id").value.trim();
 
             if (!id || isNaN(parseInt(id))) {
-                alert("Please enter a valid numeric Blockchain ID.");
+                showToast("Please enter a valid numeric Blockchain ID.", "error");
                 return;
             }
 
             try {
+                // Show loading state
+                const button = document.querySelector('.delete-btn');
+                button.innerHTML = '<span class="loading-spinner"></span> Deleting...';
+                button.disabled = true;
+                
                 const response = await fetch("http://127.0.0.1:8000/delete_blockchains", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ id: parseInt(id) })
                 });
 
+                // Reset button state
+                button.innerHTML = 'Delete';
+                button.disabled = false;
+
                 if (!response.ok) throw new Error(`Server error: ${response.status}`);
 
-                alert("✅ Blockchain deleted successfully!");
+                showToast("Blockchain deleted successfully!", "success");
                 document.getElementById("blockchain_id").value = "";
                 fetchBlockchains();
             } catch (err) {
-                alert("❌ Deletion failed.");
+                showToast("Deletion failed.", "error");
                 console.error(err);
+                // Reset button state
+                const button = document.querySelector('.delete-btn');
+                button.innerHTML = 'Delete';
+                button.disabled = false;
             }
+        }
+
+        // Toast notification system
+        function showToast(message, type = 'info') {
+            // Remove existing toasts
+            const existingToasts = document.querySelectorAll('.toast');
+            existingToasts.forEach(toast => toast.remove());
+            
+            // Create new toast
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <div class="toast-content">
+                    ${type === 'success' ? '<span class="toast-icon">✓</span>' : 
+                      type === 'error' ? '<span class="toast-icon">✕</span>' : 
+                      '<span class="toast-icon">ℹ</span>'}
+                    <span class="toast-message">${message}</span>
+                </div>
+                <button class="toast-close" onclick="this.parentNode.remove()">×</button>
+            `;
+            document.body.appendChild(toast);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (document.body.contains(toast)) {
+                    toast.classList.add('toast-hiding');
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 5000);
         }
     </script>
 </body>
