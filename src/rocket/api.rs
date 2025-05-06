@@ -1,4 +1,5 @@
 use crate::delete_blockchain;
+use crate::establish_ws_connection;
 use crate::establish_connection;
 use crate::models::Blockchain;
 use crate::rocket::cors::CORS; // if cors.rs is in the same crate
@@ -14,6 +15,12 @@ pub struct Id{
     id:i32
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct Wss{
+    endpoint:String
+}
+
+
 /// Returns all blockchain data stored in the database
 #[get("/get_all_blockchains")]
 pub fn get_all_blockchains() -> Json<Vec<Blockchain>> {
@@ -26,6 +33,15 @@ pub fn get_all_blockchains() -> Json<Vec<Blockchain>> {
     Json(results)
 }
 
+// Verify Endpoint is working or not
+#[post("/endpoint_checker",data = "<input>")]
+pub async fn verify_wss(input: Json<Wss>) {
+     match establish_ws_connection(&input.endpoint).await {
+        Ok(_) =>  println!("✅ Connection Established! 🎉"),
+        Err(error) => println!("❌ {}", error),
+    };
+}
+
 /// Returns all blockchain data stored in the database
 #[post("/delete_blockchains", data = "<input>")]
 pub fn api_delete_blockchain(input: Json<Id>) ->  &'static str {
@@ -35,7 +51,7 @@ pub fn api_delete_blockchain(input: Json<Id>) ->  &'static str {
 
 /// Configure and mount the Rocket routes
 pub fn rocket_routes() -> Vec<rocket::Route> {
-    routes![get_all_blockchains,api_delete_blockchain]
+    routes![get_all_blockchains,api_delete_blockchain,verify_wss]
 }
 
 // Rocket server launch configuration

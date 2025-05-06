@@ -76,34 +76,6 @@ async fn store_blockchain() {
     }
 }
 
-async fn verify_blockchain() {
-    let mut connection = establish_connection();
-    let results = schema::blockchain_info::table
-        .load::<Blockchain>(&mut connection)
-        .expect("Some Error occured");
-
-     println!("🌐 Current Blockchains:");
-
-    let _: Vec<&Blockchain> = results
-        .iter()
-        .map(|v| v)
-        .inspect(|v| println!("🆔  id {} ,📛 Name : {:?}", v.id, v.blockchain_name))
-        .collect();
-
-     println!("🗑️ Please enter the ID of the blockchain you want to delete:");
-
-
-    let user_input = get_selected_option() as i32;
-    let id: Vec<i32> = results.iter().map(|v| v.id).collect();
-
-    if id.contains(&user_input) {
-        delete_blockchain(user_input);
-    }
-    else{
-        println!("⚠️ Invalid ID entered. No matching blockchain found.");
-    }
-}
-
 fn delete_blockchain(id:i32) {
     let mut connection = establish_connection();
 
@@ -113,5 +85,6 @@ fn delete_blockchain(id:i32) {
             Ok(_) => println!("✅ Successfully deleted blockchain with ID {}.", id),
             Err(e) => println!("❌ Error deleting blockchain: {:?}", e),
         }
-    } 
+} 
+
 

@@ -1,4 +1,9 @@
 use std::io::{self, Write};
+use crate::Blockchain;
+use crate::establish_connection;
+use diesel::RunQueryDsl;
+use crate::delete_blockchain;
+
 
 pub fn main_menu() -> u32 {
     println!(
@@ -41,4 +46,32 @@ pub fn get_selected_option() -> u32 {
         .expect("Failed to read line");
 
     option_input.trim().parse().unwrap_or(0)
+}
+
+pub async fn verify_blockchain() {
+    let mut connection = establish_connection();
+    let results = crate::schema::blockchain_info::table
+        .load::<Blockchain>(&mut connection)
+        .expect("Some Error occured");
+
+     println!("🌐 Current Blockchains:");
+
+    let _: Vec<&Blockchain> = results
+        .iter()
+        .map(|v| v)
+        .inspect(|v| println!("🆔  id {} ,📛 Name : {:?}", v.id, v.blockchain_name))
+        .collect();
+
+     println!("🗑️ Please enter the ID of the blockchain you want to delete:");
+
+
+    let user_input = get_selected_option() as i32;
+    let id: Vec<i32> = results.iter().map(|v| v.id).collect();
+
+    if id.contains(&user_input) {
+        delete_blockchain(user_input);
+    }
+    else{
+        println!("⚠️ Invalid ID entered. No matching blockchain found.");
+    }
 }
