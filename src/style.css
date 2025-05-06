@@ -1,0 +1,126 @@
+* {
+    box-sizing: border-box;
+    font-family: "Arial", sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(to right, #6a82fb, #fc5c7d);
+    color: #333;
+    font-size: 16px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 30px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+h1 {
+    font-size: 2.2em;
+    margin-bottom: 0.5em;
+    color: #ffffff;
+}
+
+.subtitle {
+    font-size: 1.1em;
+    margin-bottom: 30px;
+    color: #ddd;
+}
+
+.card-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    justify-content: center;
+}
+
+.card {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 8px;
+    width: 100%;
+    text-align: left;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+.card h2 {
+    margin-top: 0;
+    font-size: 1.6em;
+    color: #ffffff;
+}
+
+.card p {
+    margin: 12px 0;
+    color: #e0e0e0;
+}
+
+.card code {
+    /* background-color: #333; */
+    color: #f4f4f4;
+    padding: 4px 8px;
+    border-radius: 5px;
+}
+
+.card div {
+    margin-top: 10px;
+}
+
+.empty, .error {
+    font-size: 1.1em;
+    color: #ff5757;
+}
+
+ol {
+    list-style-type: none;
+    padding-left: 10px;
+    background: transparent;
+}
+
+ol li {
+    padding: 5px 0;
+    color: #dcdcdc;
+}
+
+button {
+    background: none;
+    color: white;
+    border:#fc5c7d;
+    cursor: pointer;
+    border-radius: 100px;
+}
+button:hover {
+    background-color: rgb(223, 223, 223);
+}
+
+input, textarea, button {
+    font-size: 1rem;
+    background-color: white;
+    padding: 0.5rem;
+    /* border-radius: 500p; */
+    width: 17%;
+    background: none;
+    margin-top: 0.5rem;
+    border-radius: 14px;
+    text-decoration-style: initial;
+    align-items: center;
+    border: 1px solid #ffffff;;
+}
+
+#blockchain_id::placeholder {
+    color: white;
+    align-items: center;
+    opacity: 0.4; /* Optional: makes sure the white is fully opaque */
+  }
+  

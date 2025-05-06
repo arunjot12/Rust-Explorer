@@ -1,7 +1,9 @@
 use std::io::{self, Write};
 
 pub fn main_menu() -> u32 {
-    println!("📋 Choose:\n1️⃣ Start Rocket Server\n2️⃣ Store Blockchain Data");
+    println!(
+        "📋 Choose:\n1️⃣ Start Rocket Server\n2️⃣ Store Blockchain Data\n3️⃣ Delete Blockchain Data"
+    );
     prompt_number("👉 Your choice: ")
 }
 
