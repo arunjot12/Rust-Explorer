@@ -48,11 +48,12 @@ pub async fn current_validators(endpoint: &str) -> Vec<AccountId20> {
 }
 
 /// Fetch the current blockchain name
-pub async fn get_current_block(client: WsClient) -> Result<String, std::io::Error> {
-    let chain_name: String = client
-        .request("system_number", jsonrpsee::core::params::ArrayParams::new())
+pub async fn get_current_block(endpoint: &str) -> u32 {
+    let client = JsonrpseeClient::new(endpoint).await.expect("REASON");
+    let api = Api::<DefaultRuntimeConfig, _>::new(client).await.unwrap();
+    let current_block_number = api
+        .get_storage::<u32>("System", "Number", None)
         .await
-        .expect("Failed to retrieve the chain name");
-
-    Ok(chain_name)
+        .unwrap();
+    current_block_number.unwrap()
 }

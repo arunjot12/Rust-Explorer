@@ -18,6 +18,7 @@ async fn main() {
         1 => rocket_launch().await,
         2 => store_blockchain().await,
         3 => verify_blockchain().await,
+        4=> blocks().await,
         _ => println!("❌ Invalid choice. Restart the program."),
     }
 }
@@ -86,4 +87,10 @@ fn delete_blockchain(id:i32) {
         }
 } 
 
+async fn blocks() {
+    let endpoint = get_websocket_endpoint();
+    let block_number = get_current_block(&endpoint).await;
+    print!("{}",block_number );
+}
+   
 
