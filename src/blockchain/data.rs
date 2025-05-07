@@ -46,3 +46,14 @@ pub async fn current_validators(endpoint: &str) -> Vec<AccountId20> {
         .unwrap();
     validators.unwrap()
 }
+
+/// Fetch the current blockchain name
+pub async fn get_current_block(endpoint: &str) -> u32 {
+    let client = JsonrpseeClient::new(endpoint).await.expect("REASON");
+    let api = Api::<DefaultRuntimeConfig, _>::new(client).await.unwrap();
+    let current_block_number = api
+        .get_storage::<u32>("System", "Number", None)
+        .await
+        .unwrap();
+    current_block_number.unwrap()
+}
