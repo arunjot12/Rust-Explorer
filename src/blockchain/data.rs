@@ -7,7 +7,6 @@ use std::fmt::Debug;
 use substrate_api_client::{
     ac_primitives::{DefaultRuntimeConfig, H256}, rpc::JsonrpseeClient, Api, GetStorage
 };
-// impl frame_system::Config for Event{};e/
 
 #[derive(
     Copy,
@@ -72,18 +71,11 @@ pub async fn get_block_event(endpoint: &str) {
     let block_hash :Option<H256>= api
         .get_storage_map("System", "BlockHash", block_number -1 , None)
         .await
-        .unwrap(); // `Option<Option<T>>`
+        .unwrap();
 
      println!("*****block hash is {:?}, block number is {:?}",block_hash,block_number);
 
-    // let events = api
-    //     .get_storage::<EventRecord<substrate_api_client::ac_node_api::events::EventDetails<H256>,H256>>("System", "Events", block_hash)
-    //     .await.unwrap().expect("get_opaque_storage_by_key failed");
-
-    // println!("*****Current Event is {:?}",events);
-    // let metadata = api.metadata();
-    // println!("Metadata is {:?}",metadata);
-    let api = OnlineClient::<PolkadotConfig>::new().await;
+    let api = OnlineClient::<PolkadotConfig>::from_url(endpoint).await;
 
      // Subscribe to new finalized blocks
      let mut blocks_sub = api.expect("REASON").blocks().subscribe_finalized().await.expect("msg");

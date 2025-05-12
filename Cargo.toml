@@ -15,9 +15,4 @@ substrate-api-client = "1.17.0"
 scale-codec = { package = "parity-scale-codec", version = "3.6.12", default-features = false, features = ["derive"] }
 serde_json = "1.0.140"
 hex = "0.4.3"
-cronjob = "0.4.17"
-scale-decode = "0.16.0"
-scale-info = "2.11.6"
 subxt = "0.41.0"
-
-# codec = { package = "parity-scale-codec", version = "3.6.1", default-features = false, features = ["derive"] }
