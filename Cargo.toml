@@ -6,7 +6,7 @@ edition = "2024"
 [dependencies]
 jsonrpsee = { version = "0.25.1", features = ["async-client", "ws-client"] }
 tokio = { version = "1", features = ["full"] }
-jsonrpsee-ws-client = { version = "0.2.0-alpha.7" }
+jsonrpsee-ws-client = { version = "0.25.0" }
 diesel = { version = "2.2.0", features = ["postgres"] }
 dotenvy = "0.15"
 rocket = { version = "0.5.1", features = ["json"] }
@@ -16,3 +16,8 @@ scale-codec = { package = "parity-scale-codec", version = "3.6.12", default-feat
 serde_json = "1.0.140"
 hex = "0.4.3"
 cronjob = "0.4.17"
+scale-decode = "0.16.0"
+scale-info = "2.11.6"
+subxt = "0.41.0"
+
+# codec = { package = "parity-scale-codec", version = "3.6.1", default-features = false, features = ["derive"] }

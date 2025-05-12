@@ -90,7 +90,9 @@ fn delete_blockchain(id:i32) {
 async fn blocks() {
     let endpoint = get_websocket_endpoint();
     let block_number = get_current_block(&endpoint).await;
-    print!("{}",block_number );
+     println!("Current block is {}",block_number );
+    let event =  get_block_event(&endpoint).await;
+    print!("Current block events is {:?}",event );
 }
    
 
