@@ -69,7 +69,7 @@ pub async fn get_block_event(endpoint: &str) {
                      println!("🎯 Event: {pallet}::{variant}");
                  },
                  Err(e) => {
-                     println!("⚠️ Failed to decode event: {e:?}");
+                      println!("⚠️ Failed to decode event: {e:?}");
                  }
              }
          }
