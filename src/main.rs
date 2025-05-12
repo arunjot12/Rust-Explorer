@@ -1,7 +1,7 @@
 mod blockchain;
 pub mod cli;
-pub mod rocket;
 pub mod models;
+pub mod rocket;
 pub mod schema;
 
 use blockchain::{connection::*, data::*};
@@ -9,18 +9,31 @@ pub use cli::*;
 use diesel::{QueryDsl, RunQueryDsl};
 use models::Blockchain;
 use rocket::api::*;
+use subxt::backend::rpc::RpcClient;
+use subxt::dynamic::Value;
+use subxt::{OnlineClient, PolkadotConfig};
 
 #[tokio::main]
 async fn main() {
-    println!("🚀 Hello! Welcome to the Blockchain World 🌐\n");
+    println!("🚀 Launching into the Blockchain Universe! 🌐");
+    println!("🛠️  Initializing the Rocket Server...\n");
+    store_data_blockchains().await;
+    // rocket_launch().await
+}
 
-    match main_menu() {
-        1 => rocket_launch().await,
-        2 => store_blockchain().await,
-        3 => verify_blockchain().await,
-        4=> blocks().await,
-        _ => println!("❌ Invalid choice. Restart the program."),
-    }
+async fn store_data_blockchains() {
+    let endpoint = get_websocket_endpoint();
+    let api = OnlineClient::<PolkadotConfig>::new()
+        .await
+        .expect("InValidApi");
+    let rpc_client = RpcClient::from_url(&endpoint)
+        .await
+        .expect("Url not supported");
+    let name = get_blockchain_name(&endpoint).await;
+    let current_validators = current_validators(&endpoint).await;
+
+    println!("Name is {:?}, Validators {:?}", name, current_validators);
+    get_block_event(&endpoint).await
 }
 
 // Check the Data and store in the Blockchain
@@ -47,20 +60,20 @@ async fn store_blockchain() {
                 return;
             }
 
-            let name = get_blockchain_name(client).await;
-            let validators = current_validators(&endpoint).await;
+            // let name = get_blockchain_name(client).await;
+            // let validators = current_validators(&endpoint).await;
 
-            println!(
-                "Blockchain: {:?}\nActive Validators: {}",
-                name,
-                validators.len()
-            );
+            // println!(
+            //     "\nActive Validators: {}",
+            //     // name,
+            //     validators.len()
+            // );
 
-            let hex_validators: Vec<String> = validators
-                .iter()
-                .map(|v| format!("0x{}", hex::encode(v.0)))
-                .inspect(|v| println!("Validator: {:?}", v))
-                .collect();
+            // let hex_validators: Vec<String> = validators
+            //     .iter()
+            //     .map(|v| format!("0x{}", hex::encode(v.0)))
+            //     .inspect(|v| println!("Validator: {:?}", v))
+            //     .collect();
 
             println!(
                 "Store this in the database? Type '1' to store or any other key word to exit:"
@@ -70,29 +83,17 @@ async fn store_blockchain() {
                 println!("👋 Goodbye!");
                 return;
             }
-            store_db(&name.unwrap(), hex_validators, validators.len() as i32)
+            // store_db(&name.unwrap(), hex_validators, validators.len() as i32)
         }
         Err(error) => println!("❌ {}", error),
     }
 }
 
-fn delete_blockchain(id:i32) {
+fn delete_blockchain(id: i32) {
     let mut connection = establish_connection();
 
-        match diesel::delete(schema::blockchain_info::table.find(id))
-            .execute(&mut connection)
-        {
-            Ok(_) => println!("✅ Successfully deleted blockchain with ID {}.", id),
-            Err(e) => println!("❌ Error deleting blockchain: {:?}", e),
-        }
-} 
-
-async fn blocks() {
-    let endpoint = get_websocket_endpoint();
-    let block_number = get_current_block(&endpoint).await;
-     println!("Current block is {}",block_number );
-    let event =  get_block_event(&endpoint).await;
-    print!("Current block events is {:?}",event );
+    match diesel::delete(schema::blockchain_info::table.find(id)).execute(&mut connection) {
+        Ok(_) => println!("✅ Successfully deleted blockchain with ID {}.", id),
+        Err(e) => println!("❌ Error deleting blockchain: {:?}", e),
+    }
 }
-   
-

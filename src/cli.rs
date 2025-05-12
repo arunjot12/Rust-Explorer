@@ -1,12 +1,10 @@
-use std::io::{self, Write};
 use diesel::RunQueryDsl;
+use std::io::{self, Write};
 
 use crate::{Blockchain, delete_blockchain, establish_connection};
 
 pub fn main_menu() -> u32 {
-    println!(
-        "📋 Choose:\n1️⃣ Start Rocket Server\n2️⃣ Store Blockchain Data\n3️⃣ Delete Blockchain Data\n4️⃣ Event Listening"
-    );
+    println!("Start Rocket Server");
     prompt_number("👉 Your choice: ")
 }
 
@@ -52,7 +50,7 @@ pub async fn verify_blockchain() {
         .load::<Blockchain>(&mut connection)
         .expect("Some Error occured");
 
-     println!("🌐 Current Blockchains:");
+    println!("🌐 Current Blockchains:");
 
     let _: Vec<&Blockchain> = results
         .iter()
@@ -60,16 +58,14 @@ pub async fn verify_blockchain() {
         .inspect(|v| println!("🆔  id {} ,📛 Name : {:?}", v.id, v.blockchain_name))
         .collect();
 
-     println!("🗑️ Please enter the ID of the blockchain you want to delete:");
-
+    println!("🗑️ Please enter the ID of the blockchain you want to delete:");
 
     let user_input = get_selected_option() as i32;
     let id: Vec<i32> = results.iter().map(|v| v.id).collect();
 
     if id.contains(&user_input) {
         delete_blockchain(user_input);
-    }
-    else{
+    } else {
         println!("⚠️ Invalid ID entered. No matching blockchain found.");
     }
 }

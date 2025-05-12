@@ -1,11 +1,12 @@
 
-use jsonrpsee::{core::client::ClientT, ws_client::WsClient};
+use jsonrpsee::core::client::ClientT;
 use scale_codec::{Decode, Encode, MaxEncodedLen};
 use serde::{Deserialize, Serialize};
-use subxt::{OnlineClient,PolkadotConfig};
+use subxt::{OnlineClient,PolkadotConfig,backend::rpc::RpcClient};
 use std::fmt::Debug;
+use subxt::backend::legacy::LegacyRpcMethods;
 use substrate_api_client::{
-    ac_primitives::{DefaultRuntimeConfig, H256}, rpc::JsonrpseeClient, Api, GetStorage
+    ac_primitives::DefaultRuntimeConfig, rpc::JsonrpseeClient, Api, GetStorage
 };
 
 #[derive(
@@ -27,13 +28,10 @@ use substrate_api_client::{
 pub struct AccountId20(pub [u8; 20]);
 
 /// Fetch the current blockchain name
-pub async fn get_blockchain_name(client: WsClient) -> Result<String, std::io::Error> {
-    let chain_name: String = client
-        .request("system_chain", jsonrpsee::core::params::ArrayParams::new())
-        .await
-        .expect("Failed to retrieve the chain name");
-
-    Ok(chain_name)
+pub async fn get_blockchain_name(endpoint: &str) -> String {
+    let rpc_client = RpcClient::from_url(&endpoint).await.expect("Url not supported");
+    let rpc = LegacyRpcMethods::<PolkadotConfig>::new(rpc_client.clone());
+    rpc.system_name().await.expect("Not Valid")
 }
 
 /// Fetch the current blockchain name
@@ -47,38 +45,12 @@ pub async fn current_validators(endpoint: &str) -> Vec<AccountId20> {
     validators.unwrap()
 }
 
-/// Fetch the current blockchain name
-pub async fn get_current_block(endpoint: &str) -> u32 {
-    let client = JsonrpseeClient::new(endpoint).await.expect("REASON");
-    let api = Api::<DefaultRuntimeConfig, _>::new(client).await.unwrap();
-    let current_block_number = api
-        .get_storage::<u32>("System", "Number", None)
-        .await
-        .unwrap();
-    current_block_number.unwrap()
-}
-
 pub async fn get_block_event(endpoint: &str) {
-    let client = JsonrpseeClient::new(endpoint).await.expect("Connection failed");
-    let api = Api::<DefaultRuntimeConfig, _>::new(client).await.unwrap();
 
-    let block_number = api
-        .get_storage::<u32>("System", "Number", None)
-        .await
-        .unwrap()
-        .unwrap();
-
-    let block_hash :Option<H256>= api
-        .get_storage_map("System", "BlockHash", block_number -1 , None)
-        .await
-        .unwrap();
-
-     println!("*****block hash is {:?}, block number is {:?}",block_hash,block_number);
-
-    let api = OnlineClient::<PolkadotConfig>::from_url(endpoint).await;
+    let api = OnlineClient::<PolkadotConfig>::from_url(endpoint).await.expect("Api not Supported");
 
      // Subscribe to new finalized blocks
-     let mut blocks_sub = api.expect("REASON").blocks().subscribe_finalized().await.expect("msg");
+     let mut blocks_sub = api.blocks().subscribe_finalized().await.expect("msg");
 
      println!("Listening to finalized blocks and printing events...\n");
 
