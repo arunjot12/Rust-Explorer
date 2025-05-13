@@ -6,7 +6,6 @@ edition = "2024"
 [dependencies]
 jsonrpsee = { version = "0.25.1", features = ["async-client", "ws-client"] }
 tokio = { version = "1", features = ["full"] }
-jsonrpsee-ws-client = { version = "0.25.0" }
 diesel = { version = "2.2.0", features = ["postgres"] }
 dotenvy = "0.15"
 rocket = { version = "0.5.1", features = ["json"] }

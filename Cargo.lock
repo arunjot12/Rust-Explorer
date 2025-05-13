@@ -3786,7 +3786,6 @@ dependencies = [
  "dotenvy",
  "hex",
  "jsonrpsee 0.25.1",
- "jsonrpsee-ws-client 0.25.1",
  "parity-scale-codec",
  "rocket",
  "serde",
