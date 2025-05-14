@@ -1,4 +1,3 @@
-use jsonrpsee::core::client::ClientT;
 use scale_codec::{Decode, Encode, MaxEncodedLen};
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
@@ -31,11 +30,8 @@ pub mod firechain {}
 pub struct AccountId20(pub [u8; 20]);
 
 /// Fetch the current blockchain name
-pub async fn get_blockchain_name(endpoint: &str) -> String {
-    let rpc_client = RpcClient::from_url(&endpoint)
-        .await
-        .expect("Url not supported");
-    let rpc = LegacyRpcMethods::<PolkadotConfig>::new(rpc_client.clone());
+pub async fn get_blockchain_name(rpc: RpcClient) -> String {
+    let rpc = LegacyRpcMethods::<PolkadotConfig>::new(rpc.clone());
     rpc.system_name().await.expect("Not Valid")
 }
 
@@ -50,7 +46,8 @@ pub async fn current_validators(endpoint: &str) -> Vec<AccountId20> {
     validators.unwrap()
 }
 
-pub async fn get_block_event(endpoint: &str) {
+
+pub async fn get_block_details(endpoint: &str) {
     let api = OnlineClient::<PolkadotConfig>::from_url(endpoint)
         .await
         .expect("Api not Supported");
@@ -65,25 +62,32 @@ pub async fn get_block_event(endpoint: &str) {
         let block_number = block.number();
         println!("\n📦 Block #{block_number}");
 
+        let extrinsics = block.extrinsics().await.unwrap();
+        let transaction_length = extrinsics.len();
+
+
         let events = block.events().await.expect("2");
 
         for event in events.iter() {
-
-            // // try to parse the current event into a Transfer Event
-            // let parsed_transfer = &event.unwrap().as_event::<firechain::balances::events::Transfer>().unwrap();
-          
             match event {
                 Ok(ev) => {
                     let pallet = ev.pallet_name();
                     let variant = ev.variant_name();
                     println!("🎯 Event: {pallet}::{variant}");
+                    println!("transaction_length first {:?}",transaction_length);
 
-                      // Now try parsing the transfer event
-            if let Ok(Some(transfer)) = ev.as_event::<firechain::balances::events::Transfer>() {
-                println!("
-                {:?} transfered {:?} to {:?}",  transfer.from.to_string(), transfer.amount, transfer.to.to_string());
-            }
-
+                    // Now try parsing the transfer event
+                    if let Ok(Some(transfer)) =
+                        ev.as_event::<firechain::balances::events::Transfer>()
+                    {
+                        println!(
+                            "{:?} transfered {:?} to {:?} \n Transaction Length {:?}",
+                            transfer.from.to_string(),
+                            transfer.amount,
+                            transfer.to.to_string(),
+                            transaction_length
+                        );
+                    }
                 }
                 Err(e) => {
                     println!("⚠️ Failed to decode event: {e:?}");

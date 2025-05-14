@@ -10,8 +10,6 @@ use diesel::{QueryDsl, RunQueryDsl};
 use models::Blockchain;
 use rocket::api::*;
 use subxt::backend::rpc::RpcClient;
-use subxt::dynamic::Value;
-use subxt::{OnlineClient, PolkadotConfig};
 
 #[tokio::main]
 async fn main() {
@@ -23,17 +21,18 @@ async fn main() {
 
 async fn store_data_blockchains() {
     let endpoint = get_websocket_endpoint();
-    let api = OnlineClient::<PolkadotConfig>::new()
-        .await
-        .expect("InValidApi");
     let rpc_client = RpcClient::from_url(&endpoint)
         .await
         .expect("Url not supported");
-    let name = get_blockchain_name(&endpoint).await;
+    let name = get_blockchain_name(rpc_client).await;
     let current_validators = current_validators(&endpoint).await;
 
-    println!("Name is {:?}, Validators {:?}", name, current_validators);
-    get_block_event(&endpoint).await
+    println!(
+        "Name is {:?}\n , Total Active Validators {:?}",
+        name,
+        current_validators.len()
+    );
+    get_block_details(&endpoint).await
 }
 
 // Check the Data and store in the Blockchain
@@ -48,7 +47,7 @@ async fn store_blockchain() {
     }
 
     match establish_ws_connection(&endpoint).await {
-        Ok(client) => {
+        Ok(_) => {
             println!("✅ Connection Established! 🎉");
 
             // Get user's choice and fetch blockchain name if option 1 is selected
