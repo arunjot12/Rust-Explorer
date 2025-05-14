@@ -9,29 +9,20 @@ pub use cli::*;
 use diesel::{QueryDsl, RunQueryDsl};
 use models::Blockchain;
 use rocket::api::*;
-use subxt::backend::rpc::RpcClient;
 
 #[tokio::main]
 async fn main() {
     println!("🚀 Launching into the Blockchain Universe! 🌐");
     println!("🛠️  Initializing the Rocket Server...\n");
-    store_data_blockchains().await;
-    // rocket_launch().await
+
+    match main_menu() {
+        1 => show_data_cli().await,
+        2 => rocket_launch().await,
+    }
 }
 
-async fn store_data_blockchains() {
+async fn show_data_cli() {
     let endpoint = get_websocket_endpoint();
-    let rpc_client = RpcClient::from_url(&endpoint)
-        .await
-        .expect("Url not supported");
-    let name = get_blockchain_name(rpc_client).await;
-    let current_validators = current_validators(&endpoint).await;
-
-    println!(
-        "Name is {:?}\n , Total Active Validators {:?}",
-        name,
-        current_validators.len()
-    );
     get_block_details(&endpoint).await
 }
 
@@ -59,20 +50,20 @@ async fn store_blockchain() {
                 return;
             }
 
-            // let name = get_blockchain_name(client).await;
-            // let validators = current_validators(&endpoint).await;
+            let name = get_blockchain_name(client).await;
+            let validators = current_validators(&endpoint).await;
 
-            // println!(
-            //     "\nActive Validators: {}",
-            //     // name,
-            //     validators.len()
-            // );
+            println!(
+                "\nActive Validators: {}",
+                // name,
+                validators.len()
+            );
 
-            // let hex_validators: Vec<String> = validators
-            //     .iter()
-            //     .map(|v| format!("0x{}", hex::encode(v.0)))
-            //     .inspect(|v| println!("Validator: {:?}", v))
-            //     .collect();
+            let hex_validators: Vec<String> = validators
+                .iter()
+                .map(|v| format!("0x{}", hex::encode(v.0)))
+                .inspect(|v| println!("Validator: {:?}", v))
+                .collect();
 
             println!(
                 "Store this in the database? Type '1' to store or any other key word to exit:"
@@ -82,7 +73,7 @@ async fn store_blockchain() {
                 println!("👋 Goodbye!");
                 return;
             }
-            // store_db(&name.unwrap(), hex_validators, validators.len() as i32)
+            store_db(&name.unwrap(), hex_validators, validators.len() as i32)
         }
         Err(error) => println!("❌ {}", error),
     }

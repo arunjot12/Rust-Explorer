@@ -5,4 +5,4 @@ CREATE TABLE blockchain_info (
    blockchain_name VARCHAR NOT NULL,
    validator_count INTEGER NOT NULL,
    validators VARCHAR NOT NULL
-);
+);f
