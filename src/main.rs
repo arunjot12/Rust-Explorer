@@ -18,46 +18,26 @@ async fn main() {
     match main_menu() {
         1 => show_data_cli().await,
         2 => rocket_launch().await,
+        _ => println!("❌ Invalid choice. Restart the program."),
     }
 }
 
-async fn show_data_cli() {
-    let endpoint = get_websocket_endpoint();
-    get_block_details(&endpoint).await
-}
-
 // Check the Data and store in the Blockchain
-async fn store_blockchain() {
+async fn store_blockchain(endpoint: String) -> Result<Blockchain,diesel::result::Error>  {
     println!("💾 Preparing to store blockchain data...");
-    let endpoint = get_websocket_endpoint();
 
     // Check if endpoint starts with "ws"
     if !endpoint.starts_with("ws") {
         println!("⚠️ WebSocket endpoint must start with 'ws://' or 'wss://'.");
-        return;
+        return Err(diesel::result::Error::NotFound);
     }
 
     match establish_ws_connection(&endpoint).await {
-        Ok(_) => {
+        Ok(client) => {
             println!("✅ Connection Established! 🎉");
-
-            // Get user's choice and fetch blockchain name if option 1 is selected
-            print!(
-                "📋 Please choose what you want to see:\n1️⃣  Option 1: Blockchain Details\n2️⃣  Option 2: Nothing\n👉 Your choice: "
-            );
-            if get_selected_option() != 1 {
-                println!("👋 Thanks for visiting. Bye!");
-                return;
-            }
-
+        
             let name = get_blockchain_name(client).await;
             let validators = current_validators(&endpoint).await;
-
-            println!(
-                "\nActive Validators: {}",
-                // name,
-                validators.len()
-            );
 
             let hex_validators: Vec<String> = validators
                 .iter()
@@ -69,13 +49,10 @@ async fn store_blockchain() {
                 "Store this in the database? Type '1' to store or any other key word to exit:"
             );
 
-            if get_selected_option() != 1 {
-                println!("👋 Goodbye!");
-                return;
-            }
-            store_db(&name.unwrap(), hex_validators, validators.len() as i32)
+             store_db(&name.unwrap(), hex_validators, validators.len() as i32)
+            
         }
-        Err(error) => println!("❌ {}", error),
+       Err(_)=> Err(diesel::result::Error::NotInTransaction)
     }
 }
 

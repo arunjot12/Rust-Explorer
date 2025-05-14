@@ -4,8 +4,8 @@ use std::fmt::Debug;
 use substrate_api_client::{
     Api, GetStorage, ac_primitives::DefaultRuntimeConfig, rpc::JsonrpseeClient,
 };
-use subxt::backend::legacy::LegacyRpcMethods;
-use subxt::{OnlineClient, PolkadotConfig, backend::rpc::RpcClient, events::Events};
+use jsonrpsee::{core::client::ClientT, ws_client::WsClient};
+use subxt::{OnlineClient, PolkadotConfig};
 
 // #[derive(Clone)]
 #[subxt::subxt(runtime_metadata_path = "5irechain.scale")]

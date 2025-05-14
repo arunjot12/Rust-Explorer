@@ -1,7 +1,7 @@
 use diesel::RunQueryDsl;
 use std::io::{self, Write};
 
-use crate::{Blockchain, delete_blockchain, establish_connection};
+use crate::{Blockchain,get_block_details, delete_blockchain, establish_connection};
 
 pub fn main_menu() -> u32 {
     println!(
@@ -45,6 +45,13 @@ pub fn get_selected_option() -> u32 {
 
     option_input.trim().parse().unwrap_or(0)
 }
+
+
+pub async fn show_data_cli() {
+    let endpoint = get_websocket_endpoint();
+    get_block_details(&endpoint).await
+}
+
 
 pub async fn verify_blockchain() {
     let mut connection = establish_connection();

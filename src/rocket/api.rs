@@ -1,6 +1,6 @@
 use crate::{
     delete_blockchain, establish_connection, establish_ws_connection, models::Blockchain,
-    rocket::cors::CORS, schema::blockchain_info::dsl::*,
+    rocket::cors::CORS, schema::blockchain_info::dsl::*, store_blockchain,
 };
 use diesel::RunQueryDsl;
 use rocket::{
@@ -51,6 +51,22 @@ pub async fn verify_wss(input: Json<Wss>) -> Result<Json<Value>, Status> {
             Err(Status::InternalServerError)
         }
     }
+}
+
+#[post("/blockchain_details",data = "<input>")]
+pub async fn store_blockchain_details(input:Json<String>)> Result<Json<Value>, Status>{
+   match store_blockchain(input.to_string()).await{
+    Ok(_) => {
+        println!("✅ Data Stored");
+        Ok(Json(
+            json!({ "status": "success", "message": "Data Stored!" }),
+        ))
+    }
+    Err(error) => {
+        println!("❌ {}", error);
+        Err(Status::InternalServerError)
+    }
+   }
 }
 
 /// Returns all blockchain data stored in the database
