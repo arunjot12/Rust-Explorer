@@ -24,6 +24,19 @@ pub struct Wss {
     endpoint: String,
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct DataBlockchain {
+    endpoint: String,
+}
+
+pub struct InsertBlockDetails {
+    pub block_number:i32,
+    pub parentshash: String,
+    pub extrinsic_count: i32,
+    pub events: String,
+}
+
+
 /// Returns all blockchain data stored in the database
 #[get("/get_all_blockchains")]
 pub fn get_all_blockchains() -> Json<Vec<Blockchain>> {
@@ -53,20 +66,24 @@ pub async fn verify_wss(input: Json<Wss>) -> Result<Json<Value>, Status> {
     }
 }
 
-#[post("/blockchain_details",data = "<input>")]
-pub async fn store_blockchain_details(input:Json<String>)> Result<Json<Value>, Status>{
-   match store_blockchain(input.to_string()).await{
-    Ok(_) => {
-        println!("✅ Data Stored");
-        Ok(Json(
-            json!({ "status": "success", "message": "Data Stored!" }),
-        ))
+#[post("/blockchain_details", data = "<input>")]
+pub async fn store_blockchain_details(input: Json<DataBlockchain>) -> Result<Json<Value>, Status> {
+    let endpoint = input.endpoint.clone();
+
+    // Spawn a new blocking task to run non-Send future
+    let result = tokio::task::spawn_blocking(move || {
+        // You must use a sync wrapper here, or use a synchronous runtime block
+        tokio::runtime::Runtime::new()
+            .unwrap()
+            .block_on(store_blockchain(endpoint))
+    })
+    .await
+    .map_err(|_| Status::InternalServerError)?;
+
+    match result {
+        Ok(_) => Ok(Json(json!({ "status": "success", "message": "Data Stored!" }))),
+        Err(_) => Err(Status::InternalServerError),
     }
-    Err(error) => {
-        println!("❌ {}", error);
-        Err(Status::InternalServerError)
-    }
-   }
 }
 
 /// Returns all blockchain data stored in the database

@@ -19,7 +19,6 @@ pub struct NewBlockchain<'a> {
     pub validators: &'a str,
 }
 
-
 #[derive(Queryable, Debug, Serialize, Deserialize, Selectable)]
 #[diesel(table_name = crate::schema::block_details)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -33,7 +32,7 @@ pub struct BlockDetails {
 #[derive(Insertable)]
 #[diesel(table_name = crate::schema::block_details)]
 pub struct NewBlockDetails<'a> {
-    pub block_number :&'a i32,
+    pub block_number: &'a i32,
     pub parentshash: &'a str,
     pub extrinsic_count: i32,
     pub events: &'a str,

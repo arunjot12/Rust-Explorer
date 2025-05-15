@@ -23,19 +23,11 @@ async fn main() {
 }
 
 // Check the Data and store in the Blockchain
-async fn store_blockchain(endpoint: String) -> Result<Blockchain,diesel::result::Error>  {
-    println!("💾 Preparing to store blockchain data...");
-
-    // Check if endpoint starts with "ws"
-    if !endpoint.starts_with("ws") {
-        println!("⚠️ WebSocket endpoint must start with 'ws://' or 'wss://'.");
-        return Err(diesel::result::Error::NotFound);
-    }
+async fn store_blockchain(endpoint: String) -> Result<(),String> {
 
     match establish_ws_connection(&endpoint).await {
         Ok(client) => {
-            println!("✅ Connection Established! 🎉");
-        
+
             let name = get_blockchain_name(client).await;
             let validators = current_validators(&endpoint).await;
 
@@ -45,14 +37,11 @@ async fn store_blockchain(endpoint: String) -> Result<Blockchain,diesel::result:
                 .inspect(|v| println!("Validator: {:?}", v))
                 .collect();
 
-            println!(
-                "Store this in the database? Type '1' to store or any other key word to exit:"
-            );
-
-             store_db(&name.unwrap(), hex_validators, validators.len() as i32)
-            
+            store_db(&name.unwrap(), hex_validators, validators.len() as i32).expect("Unable to store data");
+            Ok(())
         }
-       Err(_)=> Err(diesel::result::Error::NotInTransaction)
+        // Err(_) => Err(diesel::result::Error::NotInTransaction),
+        Err(_) => Err("❌ Failed to connect to WebSocket.".to_string()),
     }
 }
 
@@ -64,3 +53,4 @@ fn delete_blockchain(id: i32) {
         Err(e) => println!("❌ Error deleting blockchain: {:?}", e),
     }
 }
+

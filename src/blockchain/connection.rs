@@ -4,7 +4,7 @@ use diesel::prelude::*;
 use dotenvy::dotenv;
 use jsonrpsee::ws_client::{WsClient, WsClientBuilder};
 
-use crate::models::{Blockchain, NewBlockchain};
+use crate::models::{Blockchain, NewBlockDetails, NewBlockchain};
 
 pub fn establish_connection() -> PgConnection {
     dotenv().ok();
@@ -22,7 +22,11 @@ pub async fn establish_ws_connection(endpoint: &str) -> Result<WsClient, String>
 }
 
 // Store the name in the database
-pub fn store_db(blockchain: &str, validators: Vec<String>, total_validators: i32) -> Result<Blockchain,diesel::result::Error> {
+pub fn store_db(
+    blockchain: &str,
+    validators: Vec<String>,
+    total_validators: i32,
+) -> Result<Blockchain, diesel::result::Error> {
     let converted_validator = serde_json::to_string(&validators).unwrap();
 
     let new_blockchain = NewBlockchain {
@@ -31,7 +35,7 @@ pub fn store_db(blockchain: &str, validators: Vec<String>, total_validators: i32
         validators: &converted_validator,
     };
 
-   diesel::insert_into(crate::schema::blockchain_info::table)
+    diesel::insert_into(crate::schema::blockchain_info::table)
         .values(&new_blockchain)
         .get_result::<Blockchain>(&mut establish_connection())
 }
