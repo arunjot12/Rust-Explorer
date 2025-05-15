@@ -29,14 +29,6 @@ pub struct DataBlockchain {
     endpoint: String,
 }
 
-pub struct InsertBlockDetails {
-    pub block_number:i32,
-    pub parentshash: String,
-    pub extrinsic_count: i32,
-    pub events: String,
-}
-
-
 /// Returns all blockchain data stored in the database
 #[get("/get_all_blockchains")]
 pub fn get_all_blockchains() -> Json<Vec<Blockchain>> {
@@ -81,7 +73,9 @@ pub async fn store_blockchain_details(input: Json<DataBlockchain>) -> Result<Jso
     .map_err(|_| Status::InternalServerError)?;
 
     match result {
-        Ok(_) => Ok(Json(json!({ "status": "success", "message": "Data Stored!" }))),
+        Ok(_) => Ok(Json(
+            json!({ "status": "success", "message": "Data Stored!" }),
+        )),
         Err(_) => Err(Status::InternalServerError),
     }
 }

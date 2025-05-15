@@ -16,18 +16,16 @@ async fn main() {
     println!("🛠️  Initializing the Rocket Server...\n");
 
     match main_menu() {
-        1 => show_data_cli().await,
-        2 => rocket_launch().await,
+        1 => rocket_launch().await,
+        2 => show_data_cli().await,
         _ => println!("❌ Invalid choice. Restart the program."),
     }
 }
 
 // Check the Data and store in the Blockchain
-async fn store_blockchain(endpoint: String) -> Result<(),String> {
-
+async fn store_blockchain(endpoint: String) -> Result<(), String> {
     match establish_ws_connection(&endpoint).await {
         Ok(client) => {
-
             let name = get_blockchain_name(client).await;
             let validators = current_validators(&endpoint).await;
 
@@ -37,7 +35,8 @@ async fn store_blockchain(endpoint: String) -> Result<(),String> {
                 .inspect(|v| println!("Validator: {:?}", v))
                 .collect();
 
-            store_db(&name.unwrap(), hex_validators, validators.len() as i32).expect("Unable to store data");
+            store_db(&name.unwrap(), hex_validators, validators.len() as i32)
+                .expect("Unable to store data");
             Ok(())
         }
         // Err(_) => Err(diesel::result::Error::NotInTransaction),
@@ -53,4 +52,3 @@ fn delete_blockchain(id: i32) {
         Err(e) => println!("❌ Error deleting blockchain: {:?}", e),
     }
 }
-

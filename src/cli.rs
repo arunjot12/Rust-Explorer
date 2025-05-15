@@ -46,7 +46,7 @@ pub fn get_selected_option() -> u32 {
 
 pub async fn show_data_cli() {
     let endpoint = get_websocket_endpoint();
-    get_block_details(&endpoint).await
+    crate::store_block_details(&endpoint).await
 }
 
 pub async fn verify_blockchain() {

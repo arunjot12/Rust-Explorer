@@ -29,7 +29,7 @@ pub struct BlockDetails {
     pub events: String,
 }
 
-#[derive(Insertable)]
+#[derive(Insertable,Debug)]
 #[diesel(table_name = crate::schema::block_details)]
 pub struct NewBlockDetails<'a> {
     pub block_number: &'a i32,

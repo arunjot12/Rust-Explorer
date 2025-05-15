@@ -4,7 +4,7 @@ use diesel::prelude::*;
 use dotenvy::dotenv;
 use jsonrpsee::ws_client::{WsClient, WsClientBuilder};
 
-use crate::models::{Blockchain, NewBlockDetails, NewBlockchain};
+use crate::models::{Blockchain, NewBlockchain};
 
 pub fn establish_connection() -> PgConnection {
     dotenv().ok();
