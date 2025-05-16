@@ -1,6 +1,6 @@
 use crate::{
-    delete_blockchain, establish_connection, establish_ws_connection, models::Blockchain,
-    rocket::cors::CORS, schema::blockchain_info::dsl::*, store_blockchain,
+    delete_blockchain, establish_connection, establish_ws_connection, models::Blockchain,models::BlockDetails,
+    rocket::cors::CORS, schema::blockchain_info::dsl::*, store_blockchain,process_blocks, schema::block_details::dsl::*
 };
 use diesel::RunQueryDsl;
 use rocket::{
@@ -41,12 +41,41 @@ pub fn get_all_blockchains() -> Json<Vec<Blockchain>> {
     Json(results)
 }
 
+/// Returns all blockchain data stored in the database
+#[get("/get_block_details")]
+pub fn get_blocks_details() -> Json<Vec<BlockDetails>> {
+    let mut connection = establish_connection();
+
+    let results = block_details
+        .load::<BlockDetails>(&mut connection)
+        .expect("Error loading blockchains");
+
+    Json(results)
+}
+
 // Verify Endpoint is working or not
 #[post("/endpoint_checker", data = "<input>")]
 pub async fn verify_wss(input: Json<Wss>) -> Result<Json<Value>, Status> {
     match establish_ws_connection(&input.endpoint).await {
         Ok(_) => {
             println!("✅ Connection Established! 🎉");
+            Ok(Json(
+                json!({ "status": "success", "message": "Connection Established!" }),
+            ))
+        }
+        Err(error) => {
+            println!("❌ {}", error);
+            Err(Status::InternalServerError)
+        }
+    }
+}
+
+// Verify Endpoint is working or not
+#[post("/endpoint_checker", data = "<input>")]
+pub async fn store_blocks_details(input: Json<DataBlockchain>) -> Result<Json<Value>, Status> {
+    match process_blocks(&input.endpoint,true).await {
+        Ok(_) => {
+            println!("✅ Storing Blocks Details! 🎉");
             Ok(Json(
                 json!({ "status": "success", "message": "Connection Established!" }),
             ))

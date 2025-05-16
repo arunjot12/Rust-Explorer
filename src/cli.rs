@@ -51,7 +51,7 @@ pub async fn show_data_cli() {
     };
 }
 
-pub async fn store_blocks_details() {
+pub async fn store_blocks_details_cli() {
     let endpoint = get_websocket_endpoint();
     if let Err(e) = process_blocks(&endpoint, true).await {
         eprintln!("❌ Error: {:?}", e);
