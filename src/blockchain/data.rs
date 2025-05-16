@@ -141,6 +141,8 @@ pub async fn store_block_details(endpoint: &str) {
 
         let events = block.events().await.expect("no events ");
 
+        let mut all_events = String::new();
+
         for event in events.iter() {
             match event {
                 Ok(ev) => {
@@ -170,18 +172,8 @@ pub async fn store_block_details(endpoint: &str) {
                     } else {
                         value = pallet.to_owned() + variant + "";
                     }
-                    
-                    let new_details = NewBlockDetails {
-                        block_number: &block_number,
-                        parentshash: &block_hash,
-                        extrinsic_count: extrinsics.len() as i32,
-                        events: &value,
-                    };
-                    
-                    diesel::insert_into(crate::schema::block_details::table)
-                        .values(&new_details)
-                        .get_result::<BlockDetails>(&mut establish_connection())
-                        .expect("Failed");
+                    all_events.push_str(&value);
+                    all_events.push_str(" | ")
                     
                 }
 
@@ -189,6 +181,20 @@ pub async fn store_block_details(endpoint: &str) {
                     println!("⚠️ Failed to decode event: {e:?}");
                 }
             }
+
         }
+        let new_details = NewBlockDetails {
+            block_number: &block_number,
+            parentshash: &block_hash,
+            extrinsic_count: extrinsics.len() as i32,
+            events: &all_events,
+        };
+        
+        diesel::insert_into(crate::schema::block_details::table)
+            .values(&new_details)
+            .get_result::<BlockDetails>(&mut establish_connection())
+            .expect("Failed");
+        
+
     }
 }
