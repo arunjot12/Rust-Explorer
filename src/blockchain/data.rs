@@ -4,6 +4,7 @@ use jsonrpsee::{core::client::ClientT, ws_client::WsClient};
 use scale_codec::{Decode, Encode, MaxEncodedLen};
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
+use std::fmt;
 use diesel::RunQueryDsl;
 use substrate_api_client::{
     Api, GetStorage, ac_primitives::DefaultRuntimeConfig, rpc::JsonrpseeClient,
@@ -14,24 +15,19 @@ use subxt::{OnlineClient, PolkadotConfig};
 #[subxt::subxt(runtime_metadata_path = "5irechain.scale")]
 pub mod firechain {}
 
-pub trait BalanceTransferDetails{
-    fn get_value(&self) -> (String,String,u128);
-}
 
-impl fmt::Display for dyn BalanceTransferDetails{
-    fn fmt(&self, f:&mut fmt::Formatter) -> fmt::Result{
-        write!(f,"{}",self.get_value())
-    }
-}
-
-
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 struct BalanceTransfer {
     transfer_from: String,
     transfer_dest: String,
     amount:u128
 }
 
+impl fmt::Display for BalanceTransfer {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "From: {}, To: {}, Amount: {}", self.transfer_from, self.transfer_dest, self.amount)
+    }
+}
 #[derive(
     Copy,
     Clone,
@@ -132,8 +128,8 @@ pub async fn store_block_details(endpoint: &str) {
 
     while let Some(block) = blocks_sub.next().await {
         let block = block.expect("msg");
-        let block_number = block.number();
-        let block_hash = block.header().parent_hash;
+        let block_number = block.number() as i32;
+        let block_hash = block.header().parent_hash.to_string();
         // println!("\n📦 Block #{block_number}");
         // println!("\n📦 Block Header #{:?}", block_hash);
 
@@ -150,13 +146,13 @@ pub async fn store_block_details(endpoint: &str) {
                     // println!("transaction_length first {:?}", extrinsics.len());
 
                     let mut new_details = NewBlockDetails {
-                        block_number: &(block_number as i32),
+                        block_number: &(block_number),
                         parentshash: &block_hash.to_string(),
                         extrinsic_count: extrinsics.len() as i32,
                         events: &(pallet.to_owned() + variant),
                     };
 
-                    println!("new_Details {:?} ",new_details);
+                    // println!("new_Details {:?} ",new_details);
 
                     // Now try parsing the transfer event
                     if let Ok(Some(transfer)) =
@@ -170,19 +166,15 @@ pub async fn store_block_details(endpoint: &str) {
                         };
 
                         let convert = transfer_details.to_string();
+                        let value = pallet.to_owned() + variant + &convert;
+                        let event_string = &value;
 
-                        new_details = NewBlockDetails {
-                            block_number: &(block_number as i32),
-                            parentshash: &block_hash.to_string(),
+                            new_details = NewBlockDetails {
+                            block_number: &(block_number),
+                            parentshash: &block_hash,
                             extrinsic_count: extrinsics.len() as i32,
-                            events: &(pallet.to_owned() + variant + convert),
-                        };
-
-                        println!("new_Details 2 {:?} ",new_details);
-
-                        // diesel::insert_into(crate::schema::block_details::table)
-                        //     .values(&new_details)
-                        //     .get_result::<BlockDetails>(&mut establish_connection()).expect("Failed");
+                            events: event_string,
+                        };                   
 
                         println!(
                             "{:?} transfered {:?} to {:?} \n Transaction Length {:?}",
@@ -192,6 +184,10 @@ pub async fn store_block_details(endpoint: &str) {
                             extrinsics.len()
                         );
                     }
+
+                diesel::insert_into(crate::schema::block_details::table)
+                    .values(&new_details)
+                    .get_result::<BlockDetails>(&mut establish_connection()).expect("Failed");
                 }
 
                 Err(e) => {
