@@ -18,8 +18,17 @@ async fn main() {
     match main_menu() {
         1 => rocket_launch().await,
         2 => show_data_cli().await,
+        3 => store_blockchain_detail_cli().await,
         _ => println!("❌ Invalid choice. Restart the program."),
     }
+}
+
+pub fn store_blockchain_detail_cli(){
+    let endpoint = get_websocket_endpoint();
+    store_blockchain(endpoint);
+    if let Err(e) = process_blocks(&endpoint, true).await {
+        eprintln!("❌ Error: {:?}", e);
+    };
 }
 
 // Check the Data and store in the Blockchain

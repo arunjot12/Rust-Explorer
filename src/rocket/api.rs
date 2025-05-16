@@ -71,43 +71,21 @@ pub async fn verify_wss(input: Json<Wss>) -> Result<Json<Value>, Status> {
 }
 
 // Verify Endpoint is working or not
-#[post("/endpoint_checker", data = "<input>")]
-pub async fn store_blocks_details(input: Json<DataBlockchain>) -> Result<Json<Value>, Status> {
-    match process_blocks(&input.endpoint,true).await {
-        Ok(_) => {
-            println!("✅ Storing Blocks Details! 🎉");
-            Ok(Json(
-                json!({ "status": "success", "message": "Connection Established!" }),
-            ))
-        }
-        Err(error) => {
-            println!("❌ {}", error);
-            Err(Status::InternalServerError)
-        }
-    }
-}
-
-#[post("/blockchain_details", data = "<input>")]
-pub async fn store_blockchain_details(input: Json<DataBlockchain>) -> Result<Json<Value>, Status> {
-    let endpoint = input.endpoint.clone();
-
-    // Spawn a new blocking task to run non-Send future
-    let result = tokio::task::spawn_blocking(move || {
-        // You must use a sync wrapper here, or use a synchronous runtime block
-        tokio::runtime::Runtime::new()
-            .unwrap()
-            .block_on(store_blockchain(endpoint))
-    })
-    .await
-    .map_err(|_| Status::InternalServerError)?;
-
-    match result {
-        Ok(_) => Ok(Json(
-            json!({ "status": "success", "message": "Data Stored!" }),
-        )),
-        Err(_) => Err(Status::InternalServerError),
-    }
-}
+// #[post("/store_block_details", data = "<input>")]
+// pub async fn store_blocks_details(input: Json<DataBlockchain>) -> Result<Json<Value>, Status> {
+//     match process_blocks(&input.endpoint,true).await {
+//         Ok(_) => {
+//             println!("✅ Storing Blocks Details! 🎉");
+//             Ok(Json(
+//                 json!({ "status": "success", "message": "Connection Established!" }),
+//             ))
+//         }
+//         Err(error) => {
+//             println!("❌ {}", error);
+//             Err(Status::InternalServerError)
+//         }
+//     }
+// }
 
 /// Returns all blockchain data stored in the database
 #[post("/delete_blockchains", data = "<input>")]
@@ -118,7 +96,7 @@ pub fn api_delete_blockchain(input: Json<Id>) -> &'static str {
 
 /// Configure and mount the Rocket routes
 pub fn rocket_routes() -> Vec<rocket::Route> {
-    routes![get_all_blockchains, api_delete_blockchain, verify_wss]
+    routes![get_all_blockchains, api_delete_blockchain, verify_wss,store_blocks_details,get_blocks_details]
 }
 
 // Rocket server launch configuration
