@@ -1,7 +1,7 @@
 use diesel::RunQueryDsl;
 use std::io::{self, Write};
 
-use crate::{Blockchain, delete_blockchain, establish_connection, get_block_details};
+use crate::{blockchain::data::process_blocks, delete_blockchain, establish_connection, Blockchain};
 
 pub fn main_menu() -> u32 {
     println!("📋 Choose:\n1️⃣ Start Rocket Server\n2️⃣ Show blockchain details on cli\n");
@@ -46,7 +46,16 @@ pub fn get_selected_option() -> u32 {
 
 pub async fn show_data_cli() {
     let endpoint = get_websocket_endpoint();
-    crate::store_block_details(&endpoint).await
+    if let Err(e) = process_blocks(&endpoint, false).await {
+        eprintln!("❌ Error: {:?}", e);
+    };
+}
+
+pub async fn store_blocks_details() {
+    let endpoint = get_websocket_endpoint();
+    if let Err(e) = process_blocks(&endpoint, true).await {
+        eprintln!("❌ Error: {:?}", e);
+    };
 }
 
 pub async fn verify_blockchain() {
