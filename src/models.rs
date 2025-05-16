@@ -24,7 +24,10 @@ pub struct NewBlockchain<'a> {
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct BlockDetails {
     pub block_number: i32,
+    pub block_hash : String,
     pub parentshash: String,
+    pub state_root:String,
+    pub extrinsis_root: String,
     pub extrinsic_count: i32,
     pub events: String,
 }
@@ -33,7 +36,10 @@ pub struct BlockDetails {
 #[diesel(table_name = crate::schema::block_details)]
 pub struct NewBlockDetails<'a> {
     pub block_number: &'a i32,
+    pub block_hash : &'a str,
     pub parentshash: &'a str,
-    pub extrinsic_count: i32,
+    pub state_root:&'a str,
+    pub extrinsis_root:&'a str,
+    pub extrinsic_count: &'a i32,
     pub events: &'a str,
 }

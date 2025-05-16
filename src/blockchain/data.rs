@@ -1,9 +1,11 @@
 use crate::establish_connection;
 use crate::models::{BlockDetails, NewBlockDetails};
+use crate::schema::block_details::parentshash;
 use diesel::RunQueryDsl;
 use jsonrpsee::{core::client::ClientT, ws_client::WsClient};
 use scale_codec::{Decode, Encode, MaxEncodedLen};
 use serde::{Deserialize, Serialize};
+use subxt::config::Header;
 use subxt::ext::subxt_core::alloc::string::ToString;
 use std::fmt;
 use std::fmt::Debug;
@@ -133,7 +135,10 @@ pub async fn store_block_details(endpoint: &str) {
     while let Some(block) = blocks_sub.next().await {
         let block = block.expect("msg");
         let block_number = block.number() as i32;
-        let block_hash = block.header().parent_hash.to_string();
+        let parent_hash = block.header().parent_hash.to_string();
+        let block_hash = block.header().hash().to_string();
+        let exitrinsic = block.header().extrinsics_root.to_string();
+        let state_root = block.header().state_root.to_string();
         // println!("\n📦 Block #{block_number}");
         // println!("\n📦 Block Header #{:?}", block_hash);
 
@@ -185,7 +190,7 @@ pub async fn store_block_details(endpoint: &str) {
         }
         let new_details = NewBlockDetails {
             block_number: &block_number,
-            parentshash: &block_hash,
+            parentshash: &parent_hash,
             extrinsic_count: extrinsics.len() as i32,
             events: &all_events,
         };
