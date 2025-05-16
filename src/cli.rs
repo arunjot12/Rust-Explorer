@@ -4,7 +4,7 @@ use std::io::{self, Write};
 use crate::{blockchain::data::process_blocks, delete_blockchain, establish_connection, Blockchain};
 
 pub fn main_menu() -> u32 {
-    println!("📋 Choose:\n1️⃣ Start Rocket Server\n2️⃣ Show blockchain details on cli\n");
+    println!("📋 Choose:\n1️⃣ Start Rocket Server\n2️⃣ Show blockchain details on cli\n3️⃣ Store Blockchain Details");
     prompt_number("👉 Your choice: ")
 }
 

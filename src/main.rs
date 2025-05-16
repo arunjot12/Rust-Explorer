@@ -23,9 +23,9 @@ async fn main() {
     }
 }
 
-pub fn store_blockchain_detail_cli(){
+async fn store_blockchain_detail_cli(){
     let endpoint = get_websocket_endpoint();
-    store_blockchain(endpoint);
+    store_blockchain(endpoint.clone()).await;
     if let Err(e) = process_blocks(&endpoint, true).await {
         eprintln!("❌ Error: {:?}", e);
     };

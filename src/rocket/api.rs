@@ -1,18 +1,15 @@
 use crate::{
-    delete_blockchain, establish_connection, establish_ws_connection, models::Blockchain,models::BlockDetails,
-    rocket::cors::CORS, schema::blockchain_info::dsl::*, store_blockchain,process_blocks, schema::block_details::dsl::*
+    establish_connection, models::Blockchain,models::BlockDetails,
+    rocket::cors::CORS, schema::blockchain_info::dsl::*, schema::block_details::dsl::*
 };
 use diesel::RunQueryDsl;
 use rocket::{
-    get,
-    http::Status,
-    post, routes,
+    get, routes,
     serde::{
         Deserialize, Serialize,
-        json::{Json, Value},
+        json::Json,
     },
 };
-use serde_json::json;
 
 #[derive(Serialize, Deserialize)]
 pub struct Id {
@@ -53,50 +50,9 @@ pub fn get_blocks_details() -> Json<Vec<BlockDetails>> {
     Json(results)
 }
 
-// Verify Endpoint is working or not
-#[post("/endpoint_checker", data = "<input>")]
-pub async fn verify_wss(input: Json<Wss>) -> Result<Json<Value>, Status> {
-    match establish_ws_connection(&input.endpoint).await {
-        Ok(_) => {
-            println!("✅ Connection Established! 🎉");
-            Ok(Json(
-                json!({ "status": "success", "message": "Connection Established!" }),
-            ))
-        }
-        Err(error) => {
-            println!("❌ {}", error);
-            Err(Status::InternalServerError)
-        }
-    }
-}
-
-// Verify Endpoint is working or not
-// #[post("/store_block_details", data = "<input>")]
-// pub async fn store_blocks_details(input: Json<DataBlockchain>) -> Result<Json<Value>, Status> {
-//     match process_blocks(&input.endpoint,true).await {
-//         Ok(_) => {
-//             println!("✅ Storing Blocks Details! 🎉");
-//             Ok(Json(
-//                 json!({ "status": "success", "message": "Connection Established!" }),
-//             ))
-//         }
-//         Err(error) => {
-//             println!("❌ {}", error);
-//             Err(Status::InternalServerError)
-//         }
-//     }
-// }
-
-/// Returns all blockchain data stored in the database
-#[post("/delete_blockchains", data = "<input>")]
-pub fn api_delete_blockchain(input: Json<Id>) -> &'static str {
-    delete_blockchain(input.id);
-    "Blockchain deleted successfully"
-}
-
 /// Configure and mount the Rocket routes
 pub fn rocket_routes() -> Vec<rocket::Route> {
-    routes![get_all_blockchains, api_delete_blockchain, verify_wss,store_blocks_details,get_blocks_details]
+    routes![get_all_blockchains,get_blocks_details]
 }
 
 // Rocket server launch configuration
