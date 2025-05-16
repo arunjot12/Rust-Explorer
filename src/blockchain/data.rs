@@ -1,11 +1,12 @@
 use crate::establish_connection;
 use crate::models::{BlockDetails, NewBlockDetails};
+use diesel::RunQueryDsl;
 use jsonrpsee::{core::client::ClientT, ws_client::WsClient};
 use scale_codec::{Decode, Encode, MaxEncodedLen};
 use serde::{Deserialize, Serialize};
-use std::fmt::Debug;
+use subxt::ext::subxt_core::alloc::string::ToString;
 use std::fmt;
-use diesel::RunQueryDsl;
+use std::fmt::Debug;
 use substrate_api_client::{
     Api, GetStorage, ac_primitives::DefaultRuntimeConfig, rpc::JsonrpseeClient,
 };
@@ -15,17 +16,20 @@ use subxt::{OnlineClient, PolkadotConfig};
 #[subxt::subxt(runtime_metadata_path = "5irechain.scale")]
 pub mod firechain {}
 
-
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 struct BalanceTransfer {
     transfer_from: String,
     transfer_dest: String,
-    amount:u128
+    amount: u128,
 }
 
 impl fmt::Display for BalanceTransfer {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "From: {}, To: {}, Amount: {}", self.transfer_from, self.transfer_dest, self.amount)
+        write!(
+            f,
+            "From: {}, To: {}, Amount: {}",
+            self.transfer_from, self.transfer_dest, self.amount
+        )
     }
 }
 #[derive(
@@ -142,52 +146,43 @@ pub async fn store_block_details(endpoint: &str) {
                 Ok(ev) => {
                     let pallet = ev.pallet_name();
                     let variant = ev.variant_name();
-                    // println!("🎯 Event: {pallet}::{variant}");
-                    // println!("transaction_length first {:?}", extrinsics.len());
+                     println!("🎯 Event: {pallet}::{variant}");
+                     println!("transaction_length first {:?}", extrinsics.len());
+                     
+                    let mut value = String::new(); // fallback value
 
-                    let mut new_details = NewBlockDetails {
-                        block_number: &(block_number),
-                        parentshash: &block_hash.to_string(),
-                        extrinsic_count: extrinsics.len() as i32,
-                        events: &(pallet.to_owned() + variant),
-                    };
-
-                    // println!("new_Details {:?} ",new_details);
-
-                    // Now try parsing the transfer event
-                    if let Ok(Some(transfer)) =
-                        ev.as_event::<firechain::balances::events::Transfer>()
-                    {
-
-                        let transfer_details = BalanceTransfer{
-                            transfer_from : transfer.from.to_string(),
-                            transfer_dest :transfer.to.to_string(),
-                            amount: transfer.amount
+                    if let Ok(Some(transfer)) = ev.as_event::<firechain::balances::events::Transfer>() {
+                        let transfer_details = BalanceTransfer {
+                            transfer_from: transfer.from.to_string(),
+                            transfer_dest: transfer.to.to_string(),
+                            amount: transfer.amount,
                         };
-
-                        let convert = transfer_details.to_string();
-                        let value = pallet.to_owned() + variant + &convert;
-                        let event_string = &value;
-
-                            new_details = NewBlockDetails {
-                            block_number: &(block_number),
-                            parentshash: &block_hash,
-                            extrinsic_count: extrinsics.len() as i32,
-                            events: event_string,
-                        };                   
-
+                    
+                        value = pallet.to_owned() + variant + &transfer_details.to_string();
+                    
                         println!(
-                            "{:?} transfered {:?} to {:?} \n Transaction Length {:?}",
+                            "{:?} transferred {:?} to {:?} \nTransaction Length {:?}",
                             transfer.from.to_string(),
                             transfer.amount,
                             transfer.to.to_string(),
                             extrinsics.len()
                         );
+                    } else {
+                        value = pallet.to_owned() + variant + "";
                     }
-
-                diesel::insert_into(crate::schema::block_details::table)
-                    .values(&new_details)
-                    .get_result::<BlockDetails>(&mut establish_connection()).expect("Failed");
+                    
+                    let new_details = NewBlockDetails {
+                        block_number: &block_number,
+                        parentshash: &block_hash,
+                        extrinsic_count: extrinsics.len() as i32,
+                        events: &value,
+                    };
+                    
+                    diesel::insert_into(crate::schema::block_details::table)
+                        .values(&new_details)
+                        .get_result::<BlockDetails>(&mut establish_connection())
+                        .expect("Failed");
+                    
                 }
 
                 Err(e) => {
