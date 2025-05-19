@@ -123,6 +123,12 @@ pub async fn process_blocks(endpoint: &str,persist:bool) -> Result<(),Box<dyn st
                             transfer.to.to_string(),
                             extrinsics.len()
                         );
+                        format!(
+                            "{}::{}({})",
+                            pallet,
+                            variant,
+                            transfer_details
+                        );
                     } else {
                         value = pallet.to_owned() + variant + "";
                     }
@@ -146,15 +152,14 @@ pub async fn process_blocks(endpoint: &str,persist:bool) -> Result<(),Box<dyn st
         };
 
         println!(
-            "NewBlockDetails {{
-            block_number: {:?},
-            parentshash: {:?},
-            extrinsic_count: {:?},
-            events: {:?},
-            block_hash: {:?},
-            state_root: {:?},
-            extrinsics_root: {:?}
-        }}",
+            "🧱 NewBlockDetails {{\n\
+             block_number     : {},\n\
+             parentshash      : {},\n\
+             extrinsic_count  : {},\n\
+             events           : {},\n\
+             block_hash       : {},\n\
+             state_root       : {},\n\
+             extrinsics_root  : {}\n}}",
             new_details.block_number,
             new_details.parentshash,
             new_details.extrinsic_count,
@@ -163,6 +168,7 @@ pub async fn process_blocks(endpoint: &str,persist:bool) -> Result<(),Box<dyn st
             new_details.state_root,
             new_details.extrinsics_root,
         );
+
 
         
 
