@@ -1,14 +1,11 @@
 use crate::{
-    establish_connection, models::Blockchain,models::BlockDetails,
-    rocket::cors::CORS, schema::blockchain_info::dsl::*, schema::block_details::dsl::*
+    establish_connection, models::BlockDetails, models::Blockchain, rocket::cors::CORS,
+    schema::block_details::dsl::*, schema::blockchain_info::dsl::*,
 };
 use diesel::RunQueryDsl;
 use rocket::{
     get, routes,
-    serde::{
-        Deserialize, Serialize,
-        json::Json,
-    },
+    serde::{Deserialize, Serialize, json::Json},
 };
 
 #[derive(Serialize, Deserialize)]
@@ -52,7 +49,7 @@ pub fn get_blocks_details() -> Json<Vec<BlockDetails>> {
 
 /// Configure and mount the Rocket routes
 pub fn rocket_routes() -> Vec<rocket::Route> {
-    routes![get_all_blockchains,get_blocks_details]
+    routes![get_all_blockchains, get_blocks_details]
 }
 
 // Rocket server launch configuration

@@ -1,10 +1,10 @@
 use crate::establish_connection;
 use crate::models::{BlockDetails, NewBlockDetails};
+use core::result::Result::Ok;
 use diesel::RunQueryDsl;
 use jsonrpsee::{core::client::ClientT, ws_client::WsClient};
 use scale_codec::{Decode, Encode, MaxEncodedLen};
 use serde::{Deserialize, Serialize};
-use core::result::Result::Ok;
 use std::fmt;
 use std::fmt::Debug;
 use substrate_api_client::{
@@ -73,7 +73,10 @@ pub async fn current_validators(endpoint: &str) -> Vec<AccountId20> {
     validators.unwrap()
 }
 
-pub async fn process_blocks(endpoint: &str,persist:bool) -> Result<(),Box<dyn std::error::Error>> {
+pub async fn process_blocks(
+    endpoint: &str,
+    persist: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
     let api = OnlineClient::<PolkadotConfig>::from_url(endpoint)
         .await
         .expect("Api not Supported");
@@ -87,9 +90,26 @@ pub async fn process_blocks(endpoint: &str,persist:bool) -> Result<(),Box<dyn st
         let block = block.expect("msg");
         let block_number = block.number() as i32;
         let parent_hash = block.header().parent_hash.to_string();
-        let block_hash = format!("0x{}",hex::encode(block.header().hash().as_ref()));
-        let extrinsics_root = format!("0x{}" ,hex::encode(block.header().extrinsics_root.as_ref()));
-        let state_root = format!("0x{}",hex::encode(block.header().state_root));
+        let block_hash = format!("0x{}", hex::encode(block.header().hash().as_ref()));
+        let extrinsics_root = format!("0x{}", hex::encode(block.header().extrinsics_root.as_ref()));
+        let state_root = format!("0x{}", hex::encode(block.header().state_root));
+        let keys: Vec<subxt::dynamic::Value> = vec![];
+
+        let event_storage = subxt::dynamic::storage("System", "Events", keys);
+        println!("Event storage:{:?}", event_storage);
+
+        let value = api
+            .storage()
+            .at_latest()
+            .await?
+            .fetch(&event_storage)
+            .await?
+            .ok_or("No events found")?;
+        // Convert dynamic::Value to serde_json::Value for easier debugging/printing
+        let decoded_value = value.to_value()?; // This returns a `serde_json::Value`
+        let a = serde_json::to_string_pretty(&decoded_value);
+        println!("{}", serde_json::to_string_pretty(&decoded_value)?);
+        // println!("Event value:{:?}",value);
 
         let extrinsics = block.extrinsics().await.unwrap();
         let events = block.events().await.expect("no events ");
@@ -123,12 +143,7 @@ pub async fn process_blocks(endpoint: &str,persist:bool) -> Result<(),Box<dyn st
                             transfer.to.to_string(),
                             extrinsics.len()
                         );
-                        format!(
-                            "{}::{}({})",
-                            pallet,
-                            variant,
-                            transfer_details
-                        );
+                        format!("{}::{}({})", pallet, variant, transfer_details);
                     } else {
                         value = pallet.to_owned() + variant + "";
                     }
@@ -151,34 +166,30 @@ pub async fn process_blocks(endpoint: &str,persist:bool) -> Result<(),Box<dyn st
             extrinsics_root: &extrinsics_root,
         };
 
-        println!(
-            "🧱 NewBlockDetails {{\n\
-             block_number     : {},\n\
-             parentshash      : {},\n\
-             extrinsic_count  : {},\n\
-             events           : {},\n\
-             block_hash       : {},\n\
-             state_root       : {},\n\
-             extrinsics_root  : {}\n}}",
-            new_details.block_number,
-            new_details.parentshash,
-            new_details.extrinsic_count,
-            new_details.events,
-            new_details.block_hash,
-            new_details.state_root,
-            new_details.extrinsics_root,
-        );
+        // println!(
+        //     "🧱 NewBlockDetails {{\n\
+        //      block_number     : {},\n\
+        //      parentshash      : {},\n\
+        //      extrinsic_count  : {},\n\
+        //      events           : {},\n\
+        //      block_hash       : {},\n\
+        //      state_root       : {},\n\
+        //      extrinsics_root  : {}\n}}",
+        //     new_details.block_number,
+        //     new_details.parentshash,
+        //     new_details.extrinsic_count,
+        //     new_details.events,
+        //     new_details.block_hash,
+        //     new_details.state_root,
+        //     new_details.extrinsics_root,
+        // );
 
-
-        
-
-    if persist{
-        diesel::insert_into(crate::schema::block_details::table)
-            .values(&new_details)
-            .get_result::<BlockDetails>(&mut establish_connection())
-            .expect("Failed");
+        if persist {
+            diesel::insert_into(crate::schema::block_details::table)
+                .values(&new_details)
+                .get_result::<BlockDetails>(&mut establish_connection())
+                .expect("Failed");
         }
     }
     Ok(())
 }
-
