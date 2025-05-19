@@ -3,10 +3,10 @@
 diesel::table! {
     block_details (block_number) {
         block_number -> Int4,
-        block_hash -> Varchar,
-        parentshash -> Varchar,
-        state_root -> Varchar,
-        extrinsics_root -> Varchar,
+        block_hash -> Text,
+        parentshash -> Text,
+        state_root -> Text,
+        extrinsics_root -> Text,
         extrinsic_count -> Int4,
         events -> Text,
     }
@@ -21,4 +21,7 @@ diesel::table! {
     }
 }
 
-diesel::allow_tables_to_appear_in_same_query!(block_details, blockchain_info,);
+diesel::allow_tables_to_appear_in_same_query!(
+    block_details,
+    blockchain_info,
+);

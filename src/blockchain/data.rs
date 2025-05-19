@@ -87,9 +87,9 @@ pub async fn process_blocks(endpoint: &str,persist:bool) -> Result<(),Box<dyn st
         let block = block.expect("msg");
         let block_number = block.number() as i32;
         let parent_hash = block.header().parent_hash.to_string();
-        let block_hash = block.header().hash().to_string();
-        let extrinsics_root = block.header().extrinsics_root.to_string();
-        let state_root = block.header().state_root.to_string();
+        let block_hash = format!("0x{}",hex::encode(block.header().hash().as_ref()));
+        let extrinsics_root = format!("0x{}" ,hex::encode(block.header().extrinsics_root.as_ref()));
+        let state_root = format!("0x{}",hex::encode(block.header().state_root));
 
         let extrinsics = block.extrinsics().await.unwrap();
         let events = block.events().await.expect("no events ");
@@ -140,10 +140,31 @@ pub async fn process_blocks(endpoint: &str,persist:bool) -> Result<(),Box<dyn st
             parentshash: &parent_hash,
             extrinsic_count: &(extrinsics.len() as i32),
             events: &all_events,
-            block_hash: &block_hash,
+            block_hash: &block_hash.to_string(),
             state_root: &state_root,
             extrinsics_root: &extrinsics_root,
         };
+
+        println!(
+            "NewBlockDetails {{
+            block_number: {:?},
+            parentshash: {:?},
+            extrinsic_count: {:?},
+            events: {:?},
+            block_hash: {:?},
+            state_root: {:?},
+            extrinsics_root: {:?}
+        }}",
+            new_details.block_number,
+            new_details.parentshash,
+            new_details.extrinsic_count,
+            new_details.events,
+            new_details.block_hash,
+            new_details.state_root,
+            new_details.extrinsics_root,
+        );
+
+        
 
     if persist{
         diesel::insert_into(crate::schema::block_details::table)
