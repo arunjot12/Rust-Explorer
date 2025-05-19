@@ -22,7 +22,11 @@ pub async fn establish_ws_connection(endpoint: &str) -> Result<WsClient, String>
 }
 
 // Store the name in the database
-pub fn store_db(blockchain: &str, validators: Vec<String>, total_validators: i32) {
+pub fn store_db(
+    blockchain: &str,
+    validators: Vec<String>,
+    total_validators: i32,
+) -> Result<Blockchain, diesel::result::Error> {
     let converted_validator = serde_json::to_string(&validators).unwrap();
 
     let new_blockchain = NewBlockchain {
@@ -34,7 +38,4 @@ pub fn store_db(blockchain: &str, validators: Vec<String>, total_validators: i32
     diesel::insert_into(crate::schema::blockchain_info::table)
         .values(&new_blockchain)
         .get_result::<Blockchain>(&mut establish_connection())
-        .expect("💥 Error saving new blockchain");
-
-    println!("✅ Blockchain name successfully stored in the database! 🗄️");
 }

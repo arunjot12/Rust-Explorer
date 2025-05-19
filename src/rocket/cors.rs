@@ -28,8 +28,8 @@ impl Fairing for CORS {
         ));
         response.set_header(Header::new("Access-Control-Allow-Headers", "*"));
 
-           // Required for OPTIONS preflight to succeed
-           if request.method().as_str() == "OPTIONS" {
+        // Required for OPTIONS preflight to succeed
+        if request.method().as_str() == "OPTIONS" {
             response.set_status(rocket::http::Status::Ok);
         }
     }
