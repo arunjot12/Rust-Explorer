@@ -12,7 +12,7 @@ use substrate_api_client::{
 };
 use subxt::config::Header;
 use subxt::ext::subxt_core::alloc::string::ToString;
-use subxt::{OnlineClient, PolkadotConfig};
+use subxt::{events, OnlineClient, PolkadotConfig};
 
 // #[derive(Clone)]
 #[subxt::subxt(runtime_metadata_path = "5irechain.scale")]
@@ -91,6 +91,7 @@ pub async fn process_blocks(
         let block_number = block.number() as i32;
         let parent_hash = block.header().parent_hash.to_string();
         let block_hash = format!("0x{}", hex::encode(block.header().hash().as_ref()));
+        let reward = events::EventsClient::new(api.clone()).at(block.header().hash());
         let extrinsics_root = format!("0x{}", hex::encode(block.header().extrinsics_root.as_ref()));
         let state_root = format!("0x{}", hex::encode(block.header().state_root));
         let keys: Vec<subxt::dynamic::Value> = vec![];
@@ -118,6 +119,7 @@ pub async fn process_blocks(
         for event in events.iter() {
             match event {
                 Ok(ev) => {
+                    
                     let pallet = ev.pallet_name();
                     let variant = ev.variant_name();
                     println!("🎯 Event: {pallet}::{variant}");
