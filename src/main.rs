@@ -19,7 +19,7 @@ async fn main() {
         1 => rocket_launch().await,
         2 => show_data_cli().await,
         3 => store_blockchain_detail_cli().await,
-        4 => explorer_cli().await(),
+        4 => explorer_cli().await,
         _ => println!("❌ Invalid choice. Restart the program."),
     }
 }

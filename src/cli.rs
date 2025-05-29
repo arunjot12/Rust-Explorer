@@ -57,7 +57,7 @@ pub async fn show_data_cli() {
 
 pub async fn explorer_cli() {
     let endpoint = get_websocket_endpoint();
-    if let Err(e) = blockchain_explorer(&endpoint, false).await {
+    if let Err(e) = crate::blockchain::explorer::blockchain_explorer(&endpoint, false).await {
         eprintln!("❌ Error: {:?}", e);
     };
 }
