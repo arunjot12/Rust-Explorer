@@ -168,23 +168,23 @@ pub async fn process_blocks(
             extrinsics_root: &extrinsics_root,
         };
 
-        // println!(
-        //     "🧱 NewBlockDetails {{\n\
-        //      block_number     : {},\n\
-        //      parentshash      : {},\n\
-        //      extrinsic_count  : {},\n\
-        //      events           : {},\n\
-        //      block_hash       : {},\n\
-        //      state_root       : {},\n\
-        //      extrinsics_root  : {}\n}}",
-        //     new_details.block_number,
-        //     new_details.parentshash,
-        //     new_details.extrinsic_count,
-        //     new_details.events,
-        //     new_details.block_hash,
-        //     new_details.state_root,
-        //     new_details.extrinsics_root,
-        // );
+        println!(
+            "🧱 NewBlockDetails {{\n\
+             block_number     : {},\n\
+             parentshash      : {},\n\
+             extrinsic_count  : {},\n\
+             events           : {},\n\
+             block_hash       : {},\n\
+             state_root       : {},\n\
+             extrinsics_root  : {}\n}}",
+            new_details.block_number,
+            new_details.parentshash,
+            new_details.extrinsic_count,
+            new_details.events,
+            new_details.block_hash,
+            new_details.state_root,
+            new_details.extrinsics_root,
+        );
 
         if persist {
             diesel::insert_into(crate::schema::block_details::table)

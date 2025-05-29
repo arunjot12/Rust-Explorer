@@ -55,6 +55,13 @@ pub async fn show_data_cli() {
     };
 }
 
+pub async fn explorer_cli() {
+    let endpoint = get_websocket_endpoint();
+    if let Err(e) = blockchain_explorer(&endpoint, false).await {
+        eprintln!("❌ Error: {:?}", e);
+    };
+}
+
 pub async fn store_blocks_details_cli() {
     let endpoint = get_websocket_endpoint();
     if let Err(e) = process_blocks(&endpoint, true).await {
