@@ -52,3 +52,22 @@ pub struct BlockChainExplorer {
     pub withdrawal_transaction: i32,
     pub contract_tx: i32,
 }
+
+
+#[derive(Insertable)]
+#[diesel(table_name = crate::schema::blockchain_explorer)]
+pub struct NewBlockChainExplorer {
+    pub block_number: i32,
+    pub status: String,
+    pub era: i32,
+    pub block_size: i32,
+    pub gas_limit: i32,
+    pub gas_used: i32,
+    pub hash: String,
+    pub block_hash: String,
+    pub parentshash: String,
+    pub state_root: String,
+    pub total_transactions: i32,
+    pub withdrawal_transaction: i32,
+    pub contract_tx: i32,
+}

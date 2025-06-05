@@ -1,5 +1,5 @@
 use crate::establish_connection;
-use crate::models::{BlockDetails, NewBlockDetails};
+// use crate::models::{BlockDetails, NewBlockDetails};
 use core::result::Result::Ok;
 use diesel::RunQueryDsl;
 use jsonrpsee::{core::client::ClientT, ws_client::WsClient};
@@ -158,39 +158,39 @@ pub async fn process_blocks(
                 }
             }
         }
-        let new_details = NewBlockDetails {
-            block_number: &block_number,
-            parentshash: &parent_hash,
-            extrinsic_count: &(extrinsics.len() as i32),
-            events: &all_events,
-            block_hash: &block_hash.to_string(),
-            state_root: &state_root,
-            extrinsics_root: &extrinsics_root,
-        };
+        // let new_details = NewBlockDetails {
+        //     block_number: &block_number,
+        //     parentshash: &parent_hash,
+        //     extrinsic_count: &(extrinsics.len() as i32),
+        //     events: &all_events,
+        //     block_hash: &block_hash.to_string(),
+        //     state_root: &state_root,
+        //     extrinsics_root: &extrinsics_root,
+        // };
 
-        println!(
-            "🧱 NewBlockDetails {{\n\
-             block_number     : {},\n\
-             parentshash      : {},\n\
-             extrinsic_count  : {},\n\
-             events           : {},\n\
-             block_hash       : {},\n\
-             state_root       : {},\n\
-             extrinsics_root  : {}\n}}",
-            new_details.block_number,
-            new_details.parentshash,
-            new_details.extrinsic_count,
-            new_details.events,
-            new_details.block_hash,
-            new_details.state_root,
-            new_details.extrinsics_root,
-        );
+        // println!(
+        //     "🧱 NewBlockDetails {{\n\
+        //      block_number     : {},\n\
+        //      parentshash      : {},\n\
+        //      extrinsic_count  : {},\n\
+        //      events           : {},\n\
+        //      block_hash       : {},\n\
+        //      state_root       : {},\n\
+        //      extrinsics_root  : {}\n}}",
+        //     new_details.block_number,
+        //     new_details.parentshash,
+        //     new_details.extrinsic_count,
+        //     new_details.events,
+        //     new_details.block_hash,
+        //     new_details.state_root,
+        //     new_details.extrinsics_root,
+        // );
 
         if persist {
-            diesel::insert_into(crate::schema::block_details::table)
-                .values(&new_details)
-                .get_result::<BlockDetails>(&mut establish_connection())
-                .expect("Failed");
+            // diesel::insert_into(crate::schema::block_details::table)
+            //     .values(&new_details)
+            //     .get_result::<BlockDetails>(&mut establish_connection())
+            //     .expect("Failed");
         }
     }
     Ok(())
