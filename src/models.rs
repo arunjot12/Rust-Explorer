@@ -19,27 +19,36 @@ pub struct NewBlockchain<'a> {
     pub validators: &'a str,
 }
 
+// block_number SERIAL PRIMARY KEY,
+//     status TEXT NOT NULL,
+//     era INTEGER NOT NULL,
+//     block_size INTEGER NOT NULL,
+//     gas_limit INTEGER NOT NULL,
+//     gas_used INTEGER NOT NULL,
+//     hash TEXT NOT NULL,
+//     block_hash TEXT NOT NULL,
+//     parentshash TEXT NOT NULL,
+//     state_root TEXT NOT NULL,
+//     total_transactions INTEGER NOT NULL,
+//     withdrawal_transaction INTEGER NOT NULL,
+//     contract_tx INTEGER NOT NULL
+
+
 #[derive(Queryable, Debug, Serialize, Deserialize, Selectable)]
-#[diesel(table_name = crate::schema::block_details)]
+#[diesel(table_name = crate::schema::blockchain_explorer)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct BlockDetails {
+pub struct BlockChainExplorer {
     pub block_number: i32,
+    pub status: String,
+    pub era: i32,
+    pub block_size: i32,
+    pub gas_limit: i32,
+    pub gas_used: i32,
+    pub hash: String,
     pub block_hash: String,
     pub parentshash: String,
     pub state_root: String,
-    pub extrinsics_root: String,
-    pub extrinsic_count: i32,
-    pub events: String,
-}
-
-#[derive(Insertable, Debug)]
-#[diesel(table_name = crate::schema::block_details)]
-pub struct NewBlockDetails<'a> {
-    pub block_number: &'a i32,
-    pub block_hash: &'a str,
-    pub parentshash: &'a str,
-    pub state_root: &'a str,
-    pub extrinsics_root: &'a str,
-    pub extrinsic_count: &'a i32,
-    pub events: &'a str,
+    pub total_transactions: i32,
+    pub withdrawal_transaction: i32,
+    pub contract_tx: i32,
 }

@@ -1,2 +1,2 @@
 -- This file should undo anything in `up.sql`
-DROP TABLE block_details
+DROP TABLE blockchain_explorer
